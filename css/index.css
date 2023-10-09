@@ -1,0 +1,654 @@
+.niveau-1-droite,
+.niveau-2-gauche {
+  position: absolute;
+  top: 126.11px;
+  left: 1081.07px;
+  width: 12.35px;
+  height: 182.35px;
+}
+
+
+.niveau-2-gauche {
+  top: 187.64px;
+  left: 109.17px;
+  width: 11.47px;
+  height: 58.42px;
+}
+.niveau-1-gauche,
+.niveau-1-milieu {
+  position: absolute;
+  top: 112.05px;
+  left: 915.18px;
+  width: 9.03px;
+  height: 127.67px;
+}
+.niveau-1-gauche {
+  top: 129.19px;
+  left: 6.73px;
+  width: 10.76px;
+  height: 147.62px;
+}
+.secrtaire-gnrale {
+  position: absolute;
+  height: 34.29%;
+  top: 36.75%;
+  left: calc(50% - 55.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.secrtaire-gnrale-wrapper {
+  position: absolute;
+  top: 110.21px;
+  left: 0;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-9xs);
+}
+.les-directions {
+  position: absolute;
+  height: 31.43%;
+  top: 36.99%;
+  left: calc(50% - 54.2px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.les-directions-wrapper {
+  position: absolute;
+  top: 101.36px;
+  left: 466.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-9xs);
+}
+.la-direction-gnrale {
+  margin: 0;
+  font-size: 4.5px;
+}
+.la-direction-gnrale-container {
+  position: absolute;
+  height: 43.72%;
+  top: 30.35%;
+  left: calc(50% - 54.97px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-1 {
+  position: absolute;
+  top: 156.5px;
+  left: 96.72px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-de-container {
+  position: absolute;
+  height: 65.71%;
+  top: 19.76%;
+  left: calc(50% - 54.48px);
+  font-weight: 600;
+  display: inline-block;
+  width: 109px;
+}
+.frame-4-1-1 {
+  position: absolute;
+  top: 193.66px;
+  left: 117.59px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.inspection-des-services {
+  position: absolute;
+  height: 24.29%;
+  top: 40.69%;
+  left: calc(50% - 54.81px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.frame-3-1 {
+  position: absolute;
+  top: 156.3px;
+  left: 14.97px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.les-missions-diplomatiques-container {
+  position: absolute;
+  height: 42.86%;
+  top: 27.62%;
+  left: calc(50% - 55.16px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-5-1 {
+  position: absolute;
+  top: 154.08px;
+  left: 923.86px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.le-commissariat-gnral-container {
+  position: absolute;
+  height: 72.87%;
+  top: 21.39%;
+  left: calc(50% - 55.14px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-6-1 {
+  position: absolute;
+  top: 153.18px;
+  left: 1005.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.la-cellule-de-container {
+  position: absolute;
+  height: 38.86%;
+  top: 32.34%;
+  left: calc(50% - 54.81px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-3-4 {
+  position: absolute;
+  top: 260.45px;
+  left: 14.97px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.le-fonds-dappui-container {
+  position: absolute;
+  height: 65.71%;
+  top: 18.65%;
+  left: calc(50% - 54.94px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-6-4 {
+  position: absolute;
+  top: 256.43px;
+  left: 1005.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.la-direction-de-container1 {
+  position: absolute;
+  height: 62.86%;
+  top: 22.86%;
+  left: calc(50% - 55.48px);
+  font-weight: 600;
+  display: inline-block;
+  width: 109px;
+}
+.frame-4-1-2 {
+  position: absolute;
+  top: 228.86px;
+  left: 117.59px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.le-service-du {
+  position: absolute;
+  height: 19.43%;
+  top: 40.97%;
+  left: calc(50% - 54.81px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.frame-3-2 {
+  position: absolute;
+  top: 190.04px;
+  left: 14.97px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.le-centre-national-container {
+  position: absolute;
+  height: 45.71%;
+  top: 29.6%;
+  left: calc(50% - 54.94px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-6-2 {
+  position: absolute;
+  top: 187.83px;
+  left: 1005.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.les-reprsentations-et-container {
+  position: absolute;
+  height: 80%;
+  top: 9.6%;
+  left: calc(50% - 54.16px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-5-2 {
+  position: absolute;
+  top: 188.74px;
+  left: 923.86px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.le-bureau-de-container {
+  position: absolute;
+  height: 77.14%;
+  top: 16.04%;
+  left: calc(50% - 54.94px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-6-5 {
+  position: absolute;
+  top: 290.72px;
+  left: 1005.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: 2.5px;
+}
+.le-service-du-container {
+  position: absolute;
+  height: 63.15%;
+  top: 20.08%;
+  left: calc(50% - 54.81px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-3-3 {
+  position: absolute;
+  top: 224.34px;
+  left: 14.97px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.les-consulats-gnraux-container {
+  position: absolute;
+  height: 62.86%;
+  top: 23.27%;
+  left: calc(50% - 54.16px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-5-3 {
+  position: absolute;
+  top: 223.03px;
+  left: 923.86px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.le-haut-conseil-container {
+  position: absolute;
+  height: 45.71%;
+  top: 26.98%;
+  left: calc(50% - 54.94px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-6-3 {
+  position: absolute;
+  top: 222.13px;
+  left: 1005.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-mediumseagreen);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-10xs);
+}
+.la-direction-des-container {
+  position: absolute;
+  height: 72.87%;
+  top: 10.92%;
+  left: calc(50% - 53.87px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-6 {
+  position: absolute;
+  top: 156.5px;
+  left: 505.69px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-afrique-container {
+  position: absolute;
+  height: 38.86%;
+  top: 30.35%;
+  left: calc(50% - 54.45px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-2 {
+  position: absolute;
+  top: 156.5px;
+  left: 177.45px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-des-container1 {
+  position: absolute;
+  height: 82.86%;
+  top: 8.57%;
+  left: calc(50% - 55.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-7 {
+  position: absolute;
+  top: 156.5px;
+  left: 587.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-de-container2 {
+  position: absolute;
+  height: 43.72%;
+  top: 30.35%;
+  left: calc(50% - 55.44px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-3 {
+  position: absolute;
+  top: 156.5px;
+  left: 258.94px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-du-container {
+  position: absolute;
+  height: 60%;
+  top: 24.86%;
+  left: calc(50% - 54.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-8 {
+  position: absolute;
+  top: 156.5px;
+  left: 670.19px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-asie-container {
+  position: absolute;
+  height: 38.86%;
+  top: 30.35%;
+  left: calc(50% - 53.92px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-4,
+.frame-4-9 {
+  position: absolute;
+  top: 156.5px;
+  left: 341.19px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.frame-4-9 {
+  left: 752.44px;
+}
+.la-direction-europe-container {
+  position: absolute;
+  height: 45.71%;
+  top: 28.57%;
+  left: calc(50% - 55.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-5 {
+  position: absolute;
+  top: 156.5px;
+  left: 423.44px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.la-direction-de-container3 {
+  position: absolute;
+  height: 62.86%;
+  top: 20%;
+  left: calc(50% - 55.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.frame-4-10 {
+  position: absolute;
+  top: 156.5px;
+  left: 834.69px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-darkorange);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.les-services-extrieurs {
+  position: absolute;
+  height: 24.29%;
+  top: 40.39%;
+  left: calc(50% - 53.84px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.les-services-extrieurs-wrapper {
+  position: absolute;
+  top: 108.71px;
+  left: 905.52px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.les-autres-administrations-container {
+  position: absolute;
+  height: 38.86%;
+  top: 29.19%;
+  left: calc(50% - 54.56px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.les-autres-administrations-wrapper {
+  position: absolute;
+  top: 107.65px;
+  left: 1021.97px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+}
+.ministre-des-affaires-container {
+  position: absolute;
+  height: 51.43%;
+  top: 28%;
+  left: calc(50% - 54.08px);
+  font-weight: 600;
+  display: inline-block;
+  width: 108px;
+}
+.ministre-des-affaires-trangr-wrapper {
+  position: absolute;
+  top: 0;
+  left: 469.89px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-9xs);
+}
+.le-cabinet {
+  position: absolute;
+  height: 24.29%;
+  top: 40.07%;
+  left: calc(50% - 54.3px);
+  display: inline-block;
+  width: 108px;
+  font-size: 4.5px;
+}
+.le-cabinet-wrapper {
+  position: absolute;
+  top: 38.6px;
+  left: 414.47px;
+  border-radius: var(--br-10xs);
+  background-color: var(--color-firebrick);
+  width: 76.16px;
+  height: 31.66px;
+  overflow: hidden;
+  font-size: var(--font-size-9xs);
+}
+.niveau-2-organigramme {
+  position: absolute;
+  top: 54.18px;
+  left: 133.28px;
+  width: 737.97px;
+  height: 102.32px;
+}
+.niveau-1-organigramme {
+  position: absolute;
+  top: 24.42px;
+  left: 30.46px;
+  width: 1031.68px;
+  height: 85.92px;
+}
+.niveau-1-droite-parent {
+  position: relative;
+  width: 100%;
+  height: 322.39px;
+  text-align: center;
+  font-size: var(--font-size-9xs-5);
+  color: var(--color-white);
+  font-family: var(--font-montserrat);
+}
+
+
+
+/* FOOTER
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.page-footer {
+  position: fixed;
+  right: 0;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+
+.page-footer a {
+  margin-left: 4px;
+}
+
+
+.copyright  {
+  color:#1094d1;
+}
+
