@@ -1,29 +1,104 @@
 <?php
-    session_start();
-    include 'inscription.php';
-    // use PHPMailer\PHPMailer\PHPMailer;
-    // use PHPMailer\PHPMailer\SMTP;
-    // use PHPMailer\PHPMailer\Exception;
-    // require './PHPMailer/src/Exception.php';
-    // require './PHPMailer/src/PHPMailer.php';
-    // require './PHPMailer/src/SMTP.php';
-    // //Create an instance; passing `true` enables exceptions
-    // if(isset($_POST['valide'])){
-    //   $dest=htmlspecialchars($_POST['email']);
-    //   $objet="Les indentifications d'acces.";
-    //   $message=htmlspecialchars($_POST['message']."\n"."Se connecter avec les identifiants suivants :\n"."Username : ".$_POST['matricule']."\nPassword : ".$_POST['password']);
-    //   $entetes="From : ".$_SESSION['email'];
-    //   $entetes.="Cc: http://localhost/GestionDemandePiece/";
-    //   $entetes.="Content-Type: text/html; charset=iso-8859-1";
-      
-    //   if(mail($dest,$objet,$message,$entetes))
-    //      echo "Mail envoyé avec succès.";
-    //   else
-    //      echo "Un problème est survenu.";
-    //   exit;
-    // }
+  include "connexion.php";
+  $matricule="";
+  $nomcomplet="";
+  $email="";
+  $niveau="";
+  $password="";
+  
 
-    
+
+
+
+  $error="";
+  $success="";
+
+  if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'admin') ){
+    if(!isset($_GET['id']) && !isset($_GET['matricule'])){
+      header("location:acueilAdmin.php");
+      exit;
+    }
+    if(isset($_GET['id'])){
+      $id = $_GET['id'];
+      $sql = "select * from utilisateur where id=$id";
+      $result = $db->query($sql);
+      $row = $result->fetch();
+      while(!$row){
+        header("location: acueilAdmin.php");
+        exit;
+      }
+      $matricule=$row['matricule'];
+      $nomcomplet=$row["nomcomplet"];
+      $niveau=$row["niveau"];
+      $email=$row["email"];
+      $password="";
+    }elseif(isset($_GET['matricule'])){
+      $id = $_GET['matricule'];
+      $sql = "select * from utilisateur where matricule=$id";
+      $result = $db->query($sql);
+      $row = $result->fetch();
+      while(!$row){
+        header("location: acueilAdmin.php");
+        exit;
+      }
+      $matricule=$row['matricule'];
+      $nomcomplet=$row["nomcomplet"];
+      $niveau=$row["niveau"];
+      $email=$row["email"];
+      $password="";
+    }
+
+  }
+  elseif($_SERVER["REQUEST_METHOD"] !='GET' && ($_SESSION['niveau'] == 'admin')){
+    $id = $_POST["id"];
+    $matricule=$_POST['matricule'];
+    $nomcomplet=$_POST["nomcomplet"];
+    $niveau=$_POST["inlineRadioOptions"];
+    $email=$_POST["email"];
+    $password=sha1($_POST['password']);
+
+    $sql = "update utilisateur set matricule='$matricule', nomcomplet='$nomcomplet', password='$password', niveau='$niveau', email='$email' where id='$id'";
+    $result = $db->query($sql);  
+    header("location: utilisateur.php");
+    exit;  
+  }
+
+  //Pour un autre user different de l'admin
+
+  if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] != 'admin')){
+    if(!isset($_GET['matricule'])){
+      header("location:acueilAdmin.php");
+      exit;
+    }
+    $matricule = $_GET['matricule'];
+    $sql = "select * from utilisateur where matricule=$matricule";
+    $result = $db->query($sql);
+    $row = $result->fetch();
+    while(!$row){
+      header("location: acueilAdmin.php");
+      exit;
+    }
+    $matricule=$row['matricule'];
+    $nomcomplet=$row["nomcomplet"];
+    //$niveau=$row["niveau"];
+    $email=$row["email"];
+    $password="";
+
+  }
+  elseif($_SERVER["REQUEST_METHOD"] !='GET' && ($_SESSION['niveau'] != 'admin')){
+    $id = $_POST["id"];
+    $matricule=$_POST['matricule'];
+    $nomcomplet=$_POST["nomcomplet"];
+    //$niveau=$_POST["inlineRadioOptions"];
+    $email=$_POST["email"];
+    $password=sha1($_POST['password']);
+
+    $sql = "update utilisateur set matricule='$matricule', nomcomplet='$nomcomplet', password='$password', email='$email' where matricule='$matricule'";
+    $result = $db->query($sql);  
+    header("location: acueilAdmin.php");
+    exit;  
+  }
+  
 ?>
 
 <html lang="fr">
@@ -47,6 +122,9 @@
             
             <!-- Style Css-->
             <link href="css/style.css" rel="stylesheet" type="text/css" />
+
+            <!-- App favicon -->
+            <link rel="shortcut icon" href="image/iconOnglet.png" />
           <style>
             /* Compte utilisateur */
             @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap");
@@ -139,24 +217,33 @@
               }
             }
           </style>
-          <!-- Style Css-->
-          <link href="./style.css" id="app-style" rel="stylesheet" type="text/css" />
         <title>METAL AFRIQUE</title>
     </head>
   <body>
     <form action="#" method="POST">
+      <?php 
+        if(($_SESSION['niveau'] == 'admin') && !isset($_GET['id']) && !isset($_GET['matricule'])){
+      ?>
       <h1>Ajouter un utilisateur</h1>
+      <?php 
+        }elseif(isset($_GET['matricule']) || isset($_GET['id'])){
+      ?>
+      <h1>Modifier mon compte</h1>
+      <?php 
+        }
+      ?>
       <div class="separation"></div>
       <div class="corps-formulaire">
         <div class="gauche">
+        <input type="hidden" name="id" value="<?php echo $id; ?>" class="form-control"> <br>
           <div class="groupe">
             <label>Nom complet :</label>
-            <input type="text" autocomplete="off" placeholder="Entrer le nom complet de l'utilisateur" name="nomcomplet"/>
+            <input type="text" autocomplete="off" value="<?php echo $nomcomplet; ?>" placeholder="Entrer le nom complet de l'utilisateur" name="nomcomplet"/>
             <i class="fas fa-user"></i>
           </div>
           <div class="groupe">
             <label>Matricule :</label>
-            <input type="text" autocomplete="off" placeholder="Entrer son matricule" name="matricule"/>
+            <input type="text" autocomplete="off" value="<?php echo $matricule; ?>" placeholder="Entrer son matricule" name="matricule"/>
             <i class="fas fa-mobile"></i>
           </div>
           <div class="groupe">
@@ -164,6 +251,9 @@
             <input type="text" autocomplete="off" placeholder="definir le mot de passe par défaut" name="password"/>
             <i class="fas fa-mobile"></i>
           </div>
+          <?php 
+            if($_SESSION['niveau'] == 'admin'){
+          ?>
           <div class="groupe1">
             <label>Status de l'utilisateur :</label></br>
                 <div class="form-check form-check-inline">
@@ -183,24 +273,41 @@
                   <label class="form-check-label" for="inlineRadio4">Administrateur</label>
                 </div>
           </div>
+          <?php 
+            }
+          ?>
           <div class="groupe">
             <label>E-mail :</label>
-            <input type="email" autocomplete="off" placeholder="Entrer son adresse e-mail" name="email"/>
+            <input type="text" autocomplete="off" value="<?php echo $email; ?>" placeholder="Entrer son adresse e-mail" name="email"/>
             <i class="fas fa-envelope"></i>
           </div>
         </div>
-
+        <?php 
+            if($_SESSION['niveau'] == 'admin'){
+        ?>
         <div class="droite">
           <div class="groupe">
             <label>Message pour l'utilisateur</label>
             <textarea placeholder="Taper un message." name="message"></textarea>
           </div>
         </div>
+        <?php 
+            }
+          ?>
       </div>
         <div class="col-md-8 align-items-center">
-           <?php if($mess == "error"){ ?> <h4 style="color:red; margin-buttom:50px;" id="rejet">Erreur remplir tous les champs svp</h4><?php } ?>
             <div class="d-flex gap-2 pt-4">
-              <a href="utilisateur.php"><input class="btn btn-danger  w-lg" name="" value="Annuler"></a>
+              <?php 
+                if($_SESSION['niveau'] == 'admin'){
+              ?>
+                <a href="utilisateur.php"><input class="btn btn-danger  w-lg" name="" value="Annuler"></a>
+              <?php 
+                }else{
+              ?>
+                <a href="acueilAdmin.php"><input class="btn btn-danger  w-lg" name="" value="Annuler"></a>
+              <?php 
+                }
+              ?>
               <input class="btn btn-success  w-lg bouton" name="valide" type="submit" value="Enregistrer">
             </div>
         </div> 

@@ -1,7 +1,8 @@
 <?php
 
+    // On se connecte à là base de données
     include 'connexionReclamation.php';
-    // On détermine sur quelle page on se trouve
+
     if(isset($_GET['page']) && !empty($_GET['page'])){
         $currentPage = (int) strip_tags($_GET['page']);
     }else{
@@ -11,9 +12,26 @@
     // On se connecte à là base de données
     include 'connect.php';
 
+    if(isset($_POST['valideArticle'])){
+      
+    }
+
+    //Suprimer articles carrément
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `status`= 'termine';";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations`;";
+    // On prépare la requête
+    $query = $db->prepare($sql);
+
+    // On exécute
+    $query->execute();
+    
+    // On récupère le nombre d'articles
+    $result = $query->fetch();
+
+    
+    $nbReclamation = (int) $result['nb_articles'];
+
 
     // On détermine le nombre total d'articles
     $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
@@ -28,41 +46,72 @@
     $result1 = $query1->fetch();
 
     $nbutilisateur = (int) $result1['nb_utilisateur'];
+   
+    //Pour la connexion DA
 
+    if($_SESSION['niveau']=='kemc'){
 
+        // ---------------On détermine le nombre total d'articles
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=1 ;";
+        
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère le nombre d'articles
+        $result = $query->fetch();
+
+        $nbArticles = (int) $result['nb_articles'];
+
+        // On détermine le nombre d'articles par page
+        $parPage = 7;
+
+        // On calcule le nombre de pages total
+        $pages = ceil($nbArticles / $parPage);
+
+        // Calcul du 1er article de la page
+        $premier = ($currentPage * $parPage) - $parPage;
+
+        //-------------------
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=1  ORDER BY `id` DESC LIMIT :premier, :parpage;";
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
+        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère les valeurs dans un tableau associatif
+        $articles = $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    //-----------------------DA
+
+    // ----------- On definie le nombre de commande a approuvées
+    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
     // On prépare la requête
-    $query = $db->prepare($sql);
+    $queryartA = $db->prepare($sqlartA);
 
     // On exécute
-    $query->execute();
-
+    $queryartA->execute();
+    
     // On récupère le nombre d'articles
-    $result = $query->fetch();
+    $resultartA = $queryartA->fetch();
+    
+    $nbartA = (int) $resultartA['nb_articles'];
 
-    $nbArticles = (int) $result['nb_articles'];
+    // $nbArticles=0;
+    // $articles=[];
+    // $pages=0;
+    
+    
 
-    // On détermine le nombre d'articles par page
-    $parPage = 7;
 
-    // On calcule le nombre de pages total
-    $pages = ceil($nbArticles / $parPage);
-
-    // Calcul du 1er article de la page
-    $premier = ($currentPage * $parPage) - $parPage;
-
-    $sql = "SELECT * FROM `articles` where `status`= 'termine' ORDER BY `id` DESC LIMIT :premier, :parpage;";
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-    $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère les valeurs dans un tableau associatif
-    $articles = $query->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
@@ -84,11 +133,22 @@
         <link href="css/icons.min.css" rel="stylesheet" type="text/css" />
         <!-- App Css-->
         <link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
+
+        <!-- Sweet Alert -->
+        <link href="./libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
+        <script src="./libs/sweetalert2/sweetalert2.min.js"></script>
+
+        
+        <!--  Jquery-ui -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
         
           <!-- Style Css-->
+          <link href="./style.css" id="app-style" rel="stylesheet" type="text/css" />
 
         <!-- App favicon -->
-        <link rel="shortcut icon" href="./image/iconOnglet.png" />
+        <link rel="shortcut icon" href="image/iconOnglet.png" />
     <title>METAL AFRIQUE</title>
 </head>
 <body>
@@ -119,31 +179,26 @@
                         }
                     ?> 
                     <?php 
-                        if($_SESSION['niveau']=='kemc'){
+                        if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='mang'){
                         ?>
                         <div class="dropdown-menu dropdown-menu-end pt-0">
                             <div class="p-3 border-bottom">
                                 <h6 class="mb-0">Maintenance</h6>
                             </div>
-                            <!--<a class="dropdown-item d-flex align-items-center" href="modifiercompte.php"><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>!-->
-                            <div class="">
-                                <div class="">
-                                    <a class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target=".add-new5" href="modifiercompte.php"><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
-                                </div>
-                            </div>
+                            <a class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target=".add-new5" href=""><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                         </div>
                         <?php
                         }
-                    ?>
-                    
+                    ?>                   
                 </div>
+                
                 <div class="modal fade add-new5" id="add-new5" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="myExtraLargeModalLabel">Ajouter une reclamation</h5>
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Faire une réclamation</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -181,59 +236,107 @@
                         </div><!-- /.modal-content -->
                     </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->
-                
+
             </div>
         <!-- Content Row -->
         <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
                     
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6t">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Commandes (All)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbArticles;?></div>
+                    <!-- Earnings (Monthly) Card Example -->                   
+                        <div class="col-xl-3 col-md-6t">
+                            <a href="acueiladmin.php">
+                                <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    Commandes (Piéces)</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbArticles;?></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                    </div>
+                               </div>
+                            </a>
+                        </div>
+                    
+
+                    <!-- Pending Requests Card Example -->
+                    <?php 
+                        if($_SESSION['niveau']=='admin' && $nbReclamation){
+                        ?>
+                        <div class="col-xl-3 col-md-6">
+                            <a href="reclamation.php">
+                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Reclamations</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                    </div>
+                            </a>
+                        </div> 
+                    <?php
+                        }
+                    ?>   
+                    <?php 
+                        if($_SESSION['niveau']=='admin'){
+                            ?>    
+                        <div class="col-xl-3 col-md-6t">
+                            <a href="utilisateur.php">
+                                <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    Utilisateurs (All)</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbutilisateur;?></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <?php
+                        }
+                    ?>
 
                     <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6">
-                        <a href="commandeCours.php">
-                            <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Commandes en cours
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                    <?php 
+                        if($_SESSION['niveau']=='kemc' && $nbartA){
+                    ?>
+                        <div class="col-xl-3 col-md-6">
+                            <a href="commandeAapprouver.php">
+                                <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient" id="clignoter1">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
                                                 </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbartA;?></div>
                                             </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            <div class="col-auto">
+                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>       
+                            </a>
+                        </div>
+                    <?php
+                        }
+                    ?>
                 </div>
 
                 <!-- Content Row -->
@@ -347,7 +450,7 @@
                                     <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
                                         <li class="nav-item">
                                             <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Commandes terminés</span> 
+                                                <span class="fw-bold font-size-15">Commandes à approuver commandes</span> 
                                             </a>
                                         </li>                              
                                     </ul>
@@ -364,7 +467,7 @@
                                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                                     <button class="accordion-button fw-medium" type="button" data-bs-toggle="collapse"
                                                                         data-bs-target="#flush-collapseOne" aria-expanded="true" aria-controls="flush-collapseOne">
-                                                                        Liste des commandes terminés
+                                                                        Liste des commandes à approuver commandes
                                                                     </button>
                                                                 </h2>
                                                                 <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
@@ -373,14 +476,15 @@
                                                                         <div class="table-responsive">
                                                                             <table class="table table-nowrap align-middle">
                                                                                 <thead class="table-light">
-                                                                                    <tr>                                                                                       
+                                                                                    <tr>                  
+                                                                                        <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
                                                                                         <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">References<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
@@ -389,33 +493,120 @@
                                                                                 <tbody>
                                                                                     <?php
                                                                                         foreach($articles as $article){
-                                                                                            if($article['status'] == 'termine'){
+                                                                                            //if($article['status'] == 'termine'){
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
+                                                                                        <td><?php echo "DA00".$article['idda']; ?></td>
                                                                                         <td><?= $article['quantites'] ?></td>
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['references'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="badge badge-soft-success mb-0"><?= $article['status'] ?></span></td>
-                                                                                        <td><?= $article['livraison'] ?></td>
-                                                                                        <td><?= $article['user'] ?></td>
+                                                                                        <td><?= $article['livraisonPart'] ?></td>
+                                                                                        <td><?= $article['userLivrer'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
-                                                                                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher" class="px-2 text-primary" data-bs-original-title="Modifier" aria-label="Modifier"><i class="bx bx-pencil font-size-18"></i></a>
-                                                                                            <a href="<?php echo "deleteAdmin.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Suprimer commande" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                                                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher" class="px-2 text-primary" data-bs-original-title="Afficher" aria-label="Afficher"><i class="bx bx-file-blank font-size-18"></i></a>
-                                                                                        </td> 
-                                                                                    </tr>
-                                                                                    <?php
+                                                                                        <?php 
+                                                                                                if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
+                                                                                            ?>
+                                                                                            <input type="hidden" class="idr" value="<?php echo $article['id']?>">
+                                                                                            <input type="hidden" class="idreg" value="<?php echo $article['id']?>">
+                                                                                            <input type="hidden" class="quantites" value="<?php echo $article['quantites']?>">
+                                                                                            <input type="hidden" class="livraisonPart" value="<?php echo $article['livraisonPart']?>">
+                                                                                            <a href="javascript:void(0);" id="approuverCommande" class="btn btn-success"><ion-icon name="arrow-undo-outline"></ion-icon>Accepter</a>
+                                                                                            <a href="javascript:void(0);" id="rejeterCommande" class="btn btn-danger "><ion-icon name="arrow-undo-outline"></ion-icon>Rejeter</a>
+                                                                                            <script>
+                                                                                                    $(document).ready( function(){
+                                                                                                        $('#approuverCommande').click(function(e) {
+                                                                                                            var idr = $(this).closest("tr").find(".idr").val();
+                                                                                                            var quantites = $(this).closest("tr").find(".quantites").val();
+                                                                                                            var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
+                                                                                                            e.preventDefault();
+                                                                                                            Swal.fire({
+                                                                                                            title: 'En es-tu sure?',
+                                                                                                            text: 'Voulez-vous vraiment Accepter cette livraison ?',
+                                                                                                            icon: 'warning',
+                                                                                                            showCancelButton: true,
+                                                                                                            confirmButtonColor: '#3085d6',
+                                                                                                            cancelButtonColor: '#d33',
+                                                                                                            confirmButtonText: "ACCEPTER LA COMMANDE",
+                                                                                                            }).then((result) => {
+                                                                                                                if (result.isConfirmed) {                                                                                                                  
+                                                                                                                    $.ajax({
+                                                                                                                            type: "POST",
+                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart,
+                                                                                                                            //data: str,
+                                                                                                                            success: function( response ) {
+                                                                                                                                Swal.fire({
+                                                                                                                                    text: 'Commande acceptée avec success!',
+                                                                                                                                    icon: 'success',
+                                                                                                                                    timer: 3000,
+                                                                                                                                    showConfirmButton: false,
+                                                                                                                                });
+                                                                                                                                location.reload();
+                                                                                                                            },
+                                                                                                                            error: function( response ) {
+                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
+                                                                                                                                //console.log( response );
+                                                                                                                            }						
+                                                                                                                    });
+                                                                                                                }
+                                                                                                            });
+                                                                                                        });
+                                                                                                    });
+                                                                                            </script>
+                                                                                            <script>
+                                                                                                    $(document).ready( function(){
+                                                                                                        $('#rejeterCommande').click(function(e) {
+                                                                                                            var id = $(this).closest("tr").find(".idr").val();
+                                                                                                            e.preventDefault();
+                                                                                                            Swal.fire({
+                                                                                                            title: 'En es-tu sure?',
+                                                                                                            text: 'Voulez-vous vraiment rejeter la livraison?',
+                                                                                                            icon: 'warning',
+                                                                                                            showCancelButton: true,
+                                                                                                            confirmButtonColor: '#3085d6',
+                                                                                                            cancelButtonColor: '#d33',
+                                                                                                            confirmButtonText: "REJETER LA LIVRAISON",
+                                                                                                            }).then((result) => {
+                                                                                                                if (result.isConfirmed) {                                                                                                                  
+                                                                                                                    $.ajax({
+                                                                                                                            type: "POST",
+                                                                                                                            url: 'deleteAdmin.php?idreg='+id,
+                                                                                                                            //data: str,
+                                                                                                                            success: function( response ) {
+                                                                                                                                Swal.fire({
+                                                                                                                                    text: 'livraison rejetée avec success!',
+                                                                                                                                    icon: 'success',
+                                                                                                                                    timer: 3000,
+                                                                                                                                    showConfirmButton: false,
+                                                                                                                                });
+                                                                                                                                location.reload();
+                                                                                                                            },
+                                                                                                                            error: function( response ) {
+                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
+                                                                                                                                //console.log( response );
+                                                                                                                            }						
+                                                                                                                    });
+                                                                                                                }
+                                                                                                            });
+                                                                                                        });
+                                                                                                    });
+                                                                                            </script>
+                                                                                            <?php
                                                                                             }
                                                                                         }
-                                                                                    ?>
+                                                                                        ?>
+                                                                                        </td> 
+                                                                                    </tr>
                                                                                 </tbody>
                                                                             </table>
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                <a href="ajoutercommande.php" data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter Commande</a>
+                                                                                    <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                </div>
+                                                                                <div class="d-flex gap-2 pt-4">
                                                                                 </div>
                                                                             </div>
                                                                             <div class="row g-0 align-items-center pb-4">
@@ -470,6 +661,7 @@
                                                 <label class="form-label fw-bold" for="prenom" >Désignations</label>
                                                 <input class="form-control" type="text" value="" name="designations" id="example-date-input"  placeholder="Taper la designation">
                                             </div>
+
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3 text-start">
@@ -483,10 +675,15 @@
                                                 <input class="form-control" type="text" value="" name="priorites" id="example-date-input" placeholder="Taper la propriété">
                                             </div>
                                         </div>
-                                        <div class="col-md-6 visually-hidden">
+                                        <div class="col-md-6">
                                             <div class="mb-3 text-start">
-                                                <label class="form-label fw-bold" for="priorites" >Status</label>
-                                                <input class="form-control" type="text" value="en cours" name="status" id="example-date-input" placeholder="">
+                                                <label class="form-label fw-bold" for="priorites">Status</label>
+                                                <select class="form-control" name="status">
+                                                    <option>Attente approbation</option>
+                                                    <option>Attente livraison</option>
+                                                    <option>livraison partielle</option>
+                                                    <option>Terminé</option>
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-md-6 visually-hidden">
@@ -496,6 +693,14 @@
                                                     $array = explode(' ', $_SESSION['nomcomplet']);
                                                     echo $array[0]; 
                                                 ?>" name="user" id="example-date-input">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="idda" ></label>
+                                                <input class="form-control " type="text" value="<?php
+                                                    echo $id;
+                                                ?>" name="idda" id="example-date-input">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -532,7 +737,6 @@
                                                         </tbody>
                                                     </table>
                                                 <div class="col-md-12 text-start">
-                                                    <a href="#" class="btn btn-danger boutons me-1">Parcourir</a>
                                                     <label for="file-upload" class="btn btn-danger boutons-ajout me-1">Ajouter fichiers</label>
                                                     <input id="file-upload" type="file" multiple style="display: none;">
                                                 </div>

@@ -1,15 +1,30 @@
 <?php
 
     session_start(); 
-        // On détermine sur quelle page on se trouve
+
+    // On se connecte à là base de données
+    include 'connect.php';
+        
+    // On détermine sur quelle page on se trouve
     if(isset($_GET['page']) && !empty($_GET['page'])){
         $currentPage = (int) strip_tags($_GET['page']);
     }else{
         $currentPage = 1;
     }
 
-    // On se connecte à là base de données
-    include 'connect.php';
+    
+    // On détermine le nombre total d'articles
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations`;";
+    // On prépare la requête
+    $query = $db->prepare($sql);
+
+    // On exécute
+    $query->execute();
+    
+    // On récupère le nombre d'articles
+    $result = $query->fetch();
+    
+    $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
     $sql = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
@@ -26,7 +41,7 @@
     $nbArticles = (int) $result['nb_utilisateur'];
 
     // On détermine le nombre d'articles par page
-    $parPage = 2;
+    $parPage = 5;
 
     // On calcule le nombre de pages total
     $pages = ceil($nbArticles / $parPage);
@@ -70,8 +85,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="images/favicon.ico">
 
+
         <!-- plugin css -->
         <link href="css/jsvectormap/jsvectormap.min.css" rel="stylesheet" type="text/css" />
+
+             <!-- Sweet Alert -->
+            <link href="./libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
+            <script src="./libs/sweetalert2/sweetalert2.min.js"></script>
+            <script src="./libs/sweetalert2/jquery-1.12.4.js"></script>
 
         <!-- gridjs css -->
         <link  href="libs/gridjs/theme/mermaid.min.css" rel="stylesheet">
@@ -83,7 +104,9 @@
         <!-- App Css-->
         <link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
         
-          <!-- Style Css-->
+        <!-- Style Css-->
+        <link href="./style.css" id="app-style" rel="stylesheet" type="text/css" />
+
 
         <!-- App favicon -->
         <link rel="shortcut icon" href="./image/iconOnglet.png" />
@@ -105,7 +128,8 @@
                         <div class="p-3 border-bottom">
                             <h6 class="mb-0">Administrateur</h6>
                         </div>
-                        <a class="dropdown-item d-flex align-items-center" href="modifiercompte.php"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
+                        <a class="dropdown-item d-flex align-items-center" href="<?php echo "updateUser.php?matricule=$_SESSION[matricule]";?>"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
+                        <div class="dropdown-divider"></div> 
                         <a class="dropdown-item d-flex align-items-center" href="ajoutercompte.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter utilisateur</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
@@ -119,6 +143,7 @@
                     
                     <!-- Earnings (Monthly) Card Example -->
                     <div class="col-xl-3 col-md-6t">
+                        <a href="acueilAdmin.php">
                             <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -133,57 +158,36 @@
                                     </div>
                                 </div>
                             </div>
-                    </div>
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6">
-                        <a href="commandeCours.php">
-                            <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Commandes en cours
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </a>
                     </div>
 
                     <!-- Pending Requests Card Example -->
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Reclamations</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                    <?php 
+                        if($_SESSION['niveau']=='admin' && $nbReclamation){
+                            ?>  
+                            <div class="col-xl-3 col-md-6">
+                                <a href="reclamation.php">
+                                    <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient"  id="clignoter2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                        Reclamations</div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
+                                </a>
                             </div>
-                        </div>
-                    </div>
+                    <?php
+                        }
+                    ?>
                     <div class="col-xl-3 col-md-6t">
+                        <a href="utilisateur.php">
                             <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -198,6 +202,7 @@
                                     </div>
                                 </div>
                             </div>
+                        </a>
                     </div>
                 </div>
 
@@ -357,7 +362,7 @@
                                                                                         <td><?= $article['niveau'] ?></td>
                                                                                         <td><?= $article['email'] ?></td>
                                                                                         <td>
-                                                                                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal" data-bs-url="images/test.pdf" data-bs-placement="top" title="" class="px-2 text-primary" data-bs-original-title="Modifier" aria-label="Modifier"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                                            <a href="<?php echo "updateUser.php?id=$article[id]"?>" data-bs-target="#fileModal" data-bs-url="images/test.pdf" data-bs-placement="top" title="Modifier utilisateur" class="px-2 text-primary" data-bs-original-title="Modifier" aria-label="Modifier"><i class="bx bx-pencil font-size-18"></i></a>
                                                                                             <a href="<?php echo "deleteUser.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Supprimer" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
                                                                                         </td> 
                                                                                     </tr>
@@ -369,7 +374,8 @@
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                <a href="ajoutercompte.php" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter utilisateur</a>
+                                                                                    <a href="ajoutercompte.php" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter utilisateur</a>
+                                                                                    <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="row g-0 align-items-center pb-4">
@@ -513,25 +519,10 @@
                 </div><!-- /.modal -->
                 </div> 
                 </div>
-                </div> 
-                <footer class="footer">
-                    <div class="">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div class="text-sm-start d-none d-sm-block">
-                                    Copyright © <script>document.write(new Date().getFullYear())</script> METAL AFRIQUE.
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="text-sm-end d-none d-sm-block">
-                                    Design by <a href="#" target="_blank" class="copyright">MouhamadoulBN.</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>                                  
+                </div>                                  
         </div> 
     </div>
+    <?php include 'footer.php'; ?>                                                                                            
 
 
 

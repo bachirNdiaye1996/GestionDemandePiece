@@ -1,6 +1,11 @@
 
 <?php
     include 'connexion.php';
+    // remove all session variables
+    session_unset();
+
+    // destroy the session
+    session_destroy();
 ?>
 
 <!DOCTYPE html>

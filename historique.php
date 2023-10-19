@@ -32,52 +32,11 @@ include 'connect.php';
 // Fin tous les articles
 
 
-// On détermine le nombre total d'articles
-$sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations`";
-// On prépare la requête
-$query = $db->prepare($sql);
-
-// On exécute
-$query->execute();
-
-// On récupère le nombre d'articles
-$result = $query->fetch();
-
-$nbReclamation = (int) $result['nb_articles'];
-
-// On détermine le nombre total d'articles
-$sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0;";
-// On prépare la requête
-$query = $db->prepare($sql);
-
-// On exécute
-$query->execute();
-
-// On récupère le nombre d'articles
-$result = $query->fetch();
-
-$nbRege = (int) $result['nb_articles'];
-
 //$_SESSION['da'] = $nbReclamation;
 
-// On détermine le nombre total d'articles
-$sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
-
-// On prépare la requête
-$query1 = $db->prepare($sql1);
-
-// On exécute
-$query1->execute();
-
-// On récupère le nombre d'articles
-$result1 = $query1->fetch();
-
-$nbutilisateur = (int) $result1['nb_utilisateur'];
-
-
-if($_SESSION['niveau']=="kemc"){
+if($_SESSION['niveau'] == "admin"){
     // On definie le nombre de DA
-    $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da` where `actif`=1;";
+    $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da`;";
     // On prépare la requête
     $queryda = $db->prepare($sqlda);
 
@@ -88,41 +47,9 @@ if($_SESSION['niveau']=="kemc"){
     $resultda = $queryda->fetch();
     
     $nbda = (int) $resultda['nb_articles'];
-    
-
-    // On détermine le nombre total d'articles
-
-    // $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=1;";
-
-
-    // // On prépare la requête
-    // $query = $db->prepare($sql);
-
-    // // On exécute
-    // $query->execute();
-
-    // // On récupère le nombre d'articles
-    // $result = $query->fetch();
-
-    // $nbArticles = (int) $result['nb_articles'];
 
     // On détermine le nombre d'articles par page
-
-    // On definie le nombre de DA
-    $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da` where `actif`=1;";
-    // On prépare la requête
-    $queryda = $db->prepare($sqlda);
-
-    // On exécute
-    $queryda->execute();
-    
-    // On récupère le nombre d'articles
-    $resultda = $queryda->fetch();
-    
-    $nbda = (int) $resultda['nb_articles'];
-
-
-    $parPage = 7;
+    $parPage = 6;
 
     // On calcule le nombre de pages total
     $pages = ceil($nbda / $parPage);
@@ -130,154 +57,7 @@ if($_SESSION['niveau']=="kemc"){
     // Calcul du 1er article de la page
     $premier = ($currentPage * $parPage) - $parPage;
 
-    $sql = "SELECT * FROM `da` where `actif`=1 ORDER BY `id`  DESC LIMIT :premier, :parpage;";
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-    $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère les valeurs dans un tableau associatif
-    $articles = $query->fetchAll(PDO::FETCH_ASSOC);
-
-    //------------DA a approvisionner
-    $sql6 = "SELECT COUNT(*) AS nb_articles FROM `da` where `actif`= 1 and `actifmang`=1 and `actifkem`=0;";
-
-
-    // On prépare la requête
-    $query6 = $db->prepare($sql6);
-
-    // On exécute
-    $query6->execute();
-
-    // On récupère le nombre d'articles
-    $result6 = $query6->fetch();
-
-    $nbArticles6 = (int) $result6['nb_articles'];
-
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=1;";
-
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère le nombre d'articles
-    $result = $query->fetch();
-
-    $nbArticles = (int) $result['nb_articles'];
-    
-    $sql5 = "SELECT * FROM `da` where `actif`=1 and `actifmang`=1  ORDER BY `id`  DESC LIMIT :premier, :parpage;";
-
-    // On prépare la requête
-    $query5 = $db->prepare($sql5);
-
-    $query5->bindValue(':premier', $premier, PDO::PARAM_INT);
-    $query5->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-    // On exécute
-    $query5->execute();
-
-    // On récupère les valeurs dans un tableau associatif
-    $articles5 = $query5->fetchAll(PDO::FETCH_ASSOC);
-}elseif($_SESSION['niveau']=="mang"){
-    // On definie le nombre de DA
-    $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da` where `actif`=1 and `actifmang`=0 ;";
-    // On prépare la requête
-    $queryda = $db->prepare($sqlda);
-
-    // On exécute
-    $queryda->execute();
-    
-    // On récupère le nombre d'articles
-    $resultda = $queryda->fetch();
-    
-    $nbda = (int) $resultda['nb_articles'];
-    
-
-    // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=0;";
-
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère le nombre d'articles
-    $result = $query->fetch();
-
-    $nbArticles = (int) $result['nb_articles'];
-
-    // On détermine le nombre d'articles par page
-    $parPage = 7;
-
-    // On calcule le nombre de pages total
-    $pages = ceil($nbda / $parPage);
-
-    // Calcul du 1er article de la page
-    $premier = ($currentPage * $parPage) - $parPage;
-
-    $sql = "SELECT * FROM `da` where `actif`=1 and `actifmang`=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-    $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère les valeurs dans un tableau associatif
-    $articles = $query->fetchAll(PDO::FETCH_ASSOC);
-}elseif($_SESSION['niveau']=="admin"){
-    // On definie le nombre de DA
-    $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da` where `actif`=1;";
-    // On prépare la requête
-    $queryda = $db->prepare($sqlda);
-
-    // On exécute
-    $queryda->execute();
-    
-    // On récupère le nombre d'articles
-    $resultda = $queryda->fetch();
-    
-    $nbda = (int) $resultda['nb_articles'];
-
-
-    // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1;";
-
-
-    // On prépare la requête
-    $query = $db->prepare($sql);
-
-    // On exécute
-    $query->execute();
-
-    // On récupère le nombre d'articles
-    $result = $query->fetch();
-
-    $nbArticles = (int) $result['nb_articles'];
-
-    // On détermine le nombre d'articles par page
-    $parPage = 7;
-
-    // On calcule le nombre de pages total
-    $pages = ceil($nbda / $parPage);
-
-    // Calcul du 1er article de la page
-    $premier = ($currentPage * $parPage) - $parPage;
-
-    $sql = "SELECT * FROM `da` where `actif`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+    $sql = "SELECT * FROM `da` ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
     // On prépare la requête
     $query = $db->prepare($sql);
@@ -291,23 +71,6 @@ if($_SESSION['niveau']=="kemc"){
     // On récupère les valeurs dans un tableau associatif
     $articles = $query->fetchAll(PDO::FETCH_ASSOC);
 }
-
-
-
-
-
-// ----------- On definie le nombre de commande a approuvées
-$sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
-// On prépare la requête
-$queryartA = $db->prepare($sqlartA);
-
-// On exécute
-$queryartA->execute();
-
-// On récupère le nombre d'articles
-$resultartA = $queryartA->fetch();
-
-$nbartA = (int) $resultartA['nb_articles'];
 
 ?>
 
@@ -368,8 +131,6 @@ $nbartA = (int) $resultartA['nb_articles'];
                         <a class="dropdown-item d-flex align-items-center" href="<?php echo "updateUser.php?matricule=$_SESSION[matricule]";?>"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item d-flex align-items-center" href="ajoutercompte.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter utilisateur</span></a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                     </div>
@@ -439,115 +200,19 @@ $nbartA = (int) $resultartA['nb_articles'];
             
         </div>
     <!-- Content Row -->
-    <div class="row header-item user text-start d-flex align-items-center w-75 p-3">                  
-                <!-- Earnings (Monthly) Card Example -->                   
-                    <div class="col-xl-3 col-md-6t">
-                        <a href="acueiladmin.php">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Commandes (DA)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbda;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                
-
-                <!-- Pending Requests Card Example -->
-                <?php 
-                    if($_SESSION['niveau']=='admin' && $nbReclamation){
-                    ?>
-                    <div class="col-xl-3 col-md-6">
-                        <a href="reclamation.php">
-                            <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Reclamations</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                <?php
-                    }
-                ?>        
+    <div class="row header-item user text-start d-flex align-items-center w-75 p-3">      
                 <?php 
                     if($_SESSION['niveau']=='admin'){
-                        ?>
-                    <div class="col-xl-3 col-md-6t">
-                        <a href="utilisateur.php">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Utilisateurs (All)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbutilisateur;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                <?php
-                    }
-                ?>
-                <?php 
-                    if(($_SESSION['niveau']=='mang' && $nbRege) || ($_SESSION['niveau']=='admin' && $nbRege) ){
-                    ?>
-                    <div class="col-xl-3 col-md-6">
-                        <a href="rejet.php">
-                            <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Livraisons rejetées</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbRege;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div> 
-                <?php
-                    }
-                ?>
-
-                <!-- Earnings (Monthly) Card Example -->
-                <?php 
-                    if($_SESSION['niveau']=='kemc' && $nbartA){
                 ?>
                     <div class="col-xl-3 col-md-6">
-                        <a href="commandeAapprouver.php">
-                            <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient" id="clignoter1">
+                        <a href="historique.php">
+                            <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient" id="">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Historique commandes
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbartA;?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbAllArticles;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -559,8 +224,7 @@ $nbartA = (int) $resultartA['nb_articles'];
                     </div>
                 <?php
                     }
-                ?>
-            </div>
+                ?>                    
 
             <!-- Content Row -->
         <div class="navbar-header">
@@ -673,7 +337,7 @@ $nbartA = (int) $resultartA['nb_articles'];
                                 <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
                                     <li class="nav-item">
                                         <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                            <span class="fw-bold font-size-15">Liste des demandes d'approvisionnement en cours</span> 
+                                            <span class="fw-bold font-size-15">Liste des demande d'approvisionnement</span> 
                                         </a>
                                     </li>                              
                                 </ul>
@@ -690,7 +354,7 @@ $nbartA = (int) $resultartA['nb_articles'];
                                                             <h2 class="accordion-header" id="flush-headingOne">
                                                                 <button class="accordion-button fw-medium" type="button" data-bs-toggle="collapse"
                                                                     data-bs-target="#flush-collapseOne" aria-expanded="true" aria-controls="flush-collapseOne">
-                                                                    Liste de toutes les DA en cours.
+                                                                    Liste de toutes les DA.
                                                                 </button>
                                                             </h2>
                                                             <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
@@ -703,13 +367,6 @@ $nbartA = (int) $resultartA['nb_articles'];
                                                                                     <th scope="col" class="fw-bold text-start">Nom de la D.A<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                    <?php 
-                                                                                            if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
-                                                                                        ?>
-                                                                                            <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <?php
-                                                                                        }
-                                                                                        ?>
                                                                                 </tr>
                                                                             </thead>
 
@@ -719,63 +376,9 @@ $nbartA = (int) $resultartA['nb_articles'];
                                                                                         //if($article['status'] == 'termine'){
                                                                                 ?>                                                                              
                                                                                 <tr class="text-start">
-                                                                                    <td class=".bg-light"><a href="<?php echo "acueilAdmin1.php?id=$article[id]"?>" class="btn  w-lg bouton" data-toggle="tooltip" data-placement="top" title="Ouvrir la DA"><i class="bx me-2"></i><?php echo "DA00".$article['id']; ?></a></td>
+                                                                                    <td class=".bg-light"><a href="<?php if(!isset($_GET['page'])){echo "historiquePieces.php?id=$article[id]";}else{echo "historiquePieces.php?id=$article[id]&page=$_GET[page]";}?>" class="btn  w-lg bouton" data-toggle="tooltip" data-placement="top" title="Ouvrir la DA"><i class="bx me-2"></i><?php echo "DA00".$article['id']; ?></a></td>
                                                                                     <td><?= $article['user'] ?></td>
-                                                                                    <td><?= $article['datecreation'] ?></td>
-                                                                                    <td>
-                                                                                        <?php 
-                                                                                            if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
-                                                                                                if($_SESSION['niveau']=='kemc'){
-                                                                                        ?>
-                                                                                            <?php
-                                                                                                }
-                                                                                            ?> 
-                                                                                            <input type="hidden" class="idda" value="<?php echo $article['id']?>">
-                                                                                            <a href="javascript:void(0);" data-bs-placement="top" title="Suprimer DA" class="suprimerDA px-2 text-danger" data-bs-original-title="Supprimer DA " aria-label="Supprimer DA"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                                                            <!-- <a href="javascript:void(0);<?php echo "deleteDa.php?idda=$article[id]"?>" data-bs-placement="top" title="Suprimer DA" class="px-2 text-danger suprimerDA" data-bs-original-title="Supprimer DA " aria-label="Supprimer DA"><i class="bx bx-trash-alt font-size-18"></i></a> !-->
-                                                                                            <script>
-                                                                                                $(document).ready( function(){
-                                                                                                    $('.suprimerDA').click(function(e) {
-                                                                                                        var idda = $(this).closest("tr").find(".idda").val();
-                                                                                                        e.preventDefault();
-                                                                                                        Swal.fire({
-                                                                                                        title: 'En es-tu sure?',
-                                                                                                        text: 'Voulez-vous vraiment supprimer cette DA ?',
-                                                                                                        icon: 'warning',
-                                                                                                        showCancelButton: true,
-                                                                                                        confirmButtonColor: '#3085d6',
-                                                                                                        cancelButtonColor: '#d33',
-                                                                                                        confirmButtonText: "SUPPRIMER LA DA",
-                                                                                                        }).then((result) => {
-                                                                                                            if (result.isConfirmed) {                                                                                                                  
-                                                                                                                $.ajax({
-                                                                                                                        type: "POST",
-                                                                                                                        url: 'deleteDa.php?idda='+idda,
-                                                                                                                        //data: str,
-                                                                                                                        success: function( response ) {
-                                                                                                                            Swal.fire({
-                                                                                                                                text: 'DA suprimée avec success!',
-                                                                                                                                icon: 'success',
-                                                                                                                                timer: 3000,
-                                                                                                                                showConfirmButton: false,
-                                                                                                                            });
-                                                                                                                            location.reload();
-                                                                                                                        },
-                                                                                                                        error: function( response ) {
-                                                                                                                            $('#status').text('Impossible de supprimer la DA : '+ response.status + " " + response.statusText);
-                                                                                                                            //console.log( response );
-                                                                                                                        }						
-                                                                                                                });
-                                                                                                            }
-                                                                                                        });
-                                                                                                    });
-                                                                                                });
-                                                                                            </script>
-                                                                                                
-                                                                                        <?php
-                                                                                        }
-                                                                                        ?> 
-                                                                                    </td> 
+                                                                                    <td><?= $article['datecreation'] ?></td> 
                                                                                 </tr>
                                                                                 <?php
                                                                                         }
@@ -783,43 +386,9 @@ $nbartA = (int) $resultartA['nb_articles'];
                                                                                 ?>
                                                                             </tbody>
                                                                         </table>
-                                                                        <!-- Bouton et pagnination--> 
-                                                                        <?php 
-                                                                            if($_SESSION['niveau']=='kemc'){
-                                                                            ?>
-                                                                                <div class="col-md-8 align-items-center">
-                                                                                    <div class="d-flex gap-2 pt-4">
-                                                                                    <a href="javascript:void(0);" class="newDA btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i>Créer une nouvelle DA</a>
-                                                                                    </div>
+                                                                        <div class="d-flex gap-2 pt-4">
+                                                                                    <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
-                                                                                <script>
-                                                                                                    $(document).ready( function(){
-                                                                                                        $('.newDA').click(function(e) {
-                                                                                                            e.preventDefault();
-                                                                                                                    $.ajax({
-                                                                                                                            type: "POST",
-                                                                                                                            url: 'ajouterDA.php',
-                                                                                                                            //data: str,
-                                                                                                                            success: function( response ) {
-                                                                                                                                Swal.fire({
-                                                                                                                                    text: 'Nouvelle DA suprimée avec success!',
-                                                                                                                                    icon: 'success',
-                                                                                                                                    timer: 3500,
-                                                                                                                                    showConfirmButton: false,
-                                                                                                                                });
-                                                                                                                                location.reload();
-                                                                                                                            },
-                                                                                                                            error: function( response ) {
-                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
-                                                                                                                                //console.log( response );
-                                                                                                                            }						
-                                                                                                                    });
-                                                                                                                })
-                                                                                                            });
-                                                                                </script>
-                                                                                <?php
-                                                                            }
-                                                                        ?>
                                                                         <div class="row g-0 align-items-center pb-4">
                                                                             <div class="col-sm-12">
                                                                                 <div class="float-sm-end">

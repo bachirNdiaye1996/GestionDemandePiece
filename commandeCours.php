@@ -1,6 +1,6 @@
 <?php
 
-    session_start(); 
+    include 'connexionReclamation.php';
 
     // On détermine sur quelle page on se trouve
     if(isset($_GET['page']) && !empty($_GET['page'])){
@@ -8,6 +8,19 @@
     }else{
         $currentPage = 1;
     }
+
+    // On détermine le nombre total d'articles
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations`;";
+    // On prépare la requête
+    $query = $db->prepare($sql);
+
+    // On exécute
+    $query->execute();
+    
+    // On récupère le nombre d'articles
+    $result = $query->fetch();
+    
+    $nbReclamation = (int) $result['nb_articles'];
 
     // On se connecte à là base de données
     include 'connect.php';
@@ -98,7 +111,6 @@
                                 <h6 class="mb-0">Administrateur</h6>
                             </div>
                             <a class="dropdown-item d-flex align-items-center" href="modifiercompte.php"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
-                            <a class="dropdown-item d-flex align-items-center" href="ajoutercompte.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter utilisateur</span></a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                         </div>
@@ -112,15 +124,64 @@
                             <div class="p-3 border-bottom">
                                 <h6 class="mb-0">Maintenance</h6>
                             </div>
-                            <a class="dropdown-item d-flex align-items-center" href="modifiercompte.php"><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
+                            <div class="">
+                                <div class="">
+                                    <a class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target=".add-new5" href=""><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
+                                </div>
+                            </div>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                         </div>
                         <?php
                         }
                     ?>                   
-                </div>               
+                </div>
+                
+                <div class="modal fade add-new5" id="add-new5" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Ajouter une reclamation</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="#" method="POST">
+                                    <div class="row">
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-6 text-start">
+                                                <label class="form-label fw-bold" for="nom">Message</label>
+                                                <textarea class="form-control" placeholder="Taper votre reclamation svp!" name="message" id="example-date-input" rows="8"></textarea>
+                                            </div>
+                                        </div>                                      
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="user" ></label>
+                                                <input class="form-control " type="text" value="<?php
+                                                    $array = explode(' ', $_SESSION['nomcomplet']);
+                                                    echo $array[0]; 
+                                                ?>" name="user" id="example-date-input">
+                                            </div>
+                                        </div>   
+                                </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12 text-end">
+                                            <div class="col-md-8 align-items-center col-md-12 text-end">
+                                                <div class="d-flex gap-2 pt-4">                           
+                                                    <a href="acueilKemC.php"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                    <input class="btn btn-success  w-lg bouton" name="valide" type="submit" value="Envoyer">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>                             
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
             </div>
+
+
         <!-- Content Row -->
         <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
                     
@@ -184,7 +245,7 @@
                                                 <div class="col mr-2">
                                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                         Reclamations</div>
-                                                    <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
                                                 </div>
                                                 <div class="col-auto">
                                                     <i class="fas fa-comments fa-2x text-gray-300"></i>

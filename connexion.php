@@ -28,8 +28,8 @@
                 if($Utilisateur['niveau'] == 'admin'){
                     header('Location: acueilAdmin.php');
                     exit;
-                }elseif($Utilisateur['niveau'] == 'kemc'){
-                    header('Location: acueilKemC.php');
+                }elseif($Utilisateur['niveau'] == 'kemc' || $Utilisateur['niveau'] == 'mang'){
+                    header('Location: acueilAdmin.php');
                     exit;
                 }else{
                     header('Location: acueil.php');

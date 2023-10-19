@@ -1,0 +1,29 @@
+/*Clignoter l'utilisateur*/
+#clignoter1 {
+    animation: clignoter1 2s infinite;
+}
+@keyframes clignoter1 {
+    0% { opacity:0.2; }
+    50% { opacity:1; }
+    100% { opacity:0; }
+} 
+
+/*Clignoter reclamation*/
+#clignoter2 {
+    animation: clignoter2 1.5s infinite;
+}
+@keyframes clignoter2 {
+    0% { opacity:0.2; }
+    50% { opacity:1; }
+    100% { opacity:0; }
+}
+
+/*Clignoter reclamation*/
+#rejet {
+    animation: rejet 2.5s infinite;
+}
+@keyframes rejet {
+    0% { opacity:0.2; }
+    50% { opacity:1; }
+    100% { opacity:0; }
+}
