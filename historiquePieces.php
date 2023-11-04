@@ -12,11 +12,11 @@
     // On se connecte à là base de données
     include 'connect.php';
 
-    if(isset($_GET['id']) && $_SESSION['niveau']=='admin'){
+    if((isset($_GET['id']) && $_SESSION['niveau']=='admin') || (isset($_GET['id']) && $_SESSION['niveau']=='kemc')){
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`='0';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -39,7 +39,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`= '$id' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`='$id' and `description`='0' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -52,6 +52,22 @@
 
         // On récupère les valeurs dans un tableau associatif
         $articles = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        
+        // ----------- On definie le nombre de demande
+        
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `description`!='0' and `description`!='';";
+            
+        // On prépare la requête
+        $queryd = $db->prepare($sqld);
+
+        // On exécute
+        $queryd->execute();
+
+        // On récupère le nombre d'articles
+        $resultd = $queryd->fetch();
+
+        $nbDemande = (int) $resultd['nb_articles'];
 
     }
     
@@ -200,6 +216,31 @@
                                </div>
                             </a>
                         </div>
+
+                        <?php 
+                    if($_SESSION['niveau']=='admin' && $nbDemande){
+                        ?>
+                    <div class="col-xl-3 col-md-6t">
+                        <a href="historiqueDemandes.php?id=<?php echo $_GET['id'];?>">
+                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Demandes (En cours)</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nbre (Demandes) : <?php echo $nbDemande;?></div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <?php
+                    }
+                ?> 
                 </div>
 
                 <!-- Content Row -->
@@ -349,6 +390,8 @@
                                                                                         <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Durée livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
                                                                                 </thead>
@@ -365,11 +408,18 @@
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['references'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="badge badge-soft-success mb-0"><?= $article['status'] ?></span></td>                                                                                       
+                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>                                                                                       
                                                                                         <td><?= $article['livraison'] ?></td>
                                                                                         <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
+                                                                                        <td><?= $article['datelivraison'] ?></td>
+                                                                                        <td><?php
+                                                                                            //$now = time();
+                                                                                            $dateCreation = strtotime($article['datecreation']);
+                                                                                            $diff = strtotime($article['datelivraison']) - $dateCreation;
+                                                                                            if(floor($diff/(60*60*24)) == 0){echo "Moins de 24H";}else{echo floor($diff/(60*60*24))."  (JOURS)";}
+                                                                                        ?></td>
                                                                                         <td>
                                                                                             <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                         </td> 
@@ -476,7 +526,7 @@
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                    <a href="<?php if(!isset($_GET['page'])){echo "historique.php?";}else{echo "historique.php?page=$_GET[page]";}?>" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                    <a href="<?php echo "historique.php";?>" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
                                                                                 <div class="d-flex gap-2 pt-4">
                                                                                 </div>

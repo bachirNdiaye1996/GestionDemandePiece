@@ -14,6 +14,7 @@ $namefile="";
 $error="";
 $success="";
 $idda="";
+$EstDemande=false;
 
 if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
   if(!isset($_GET['id'])){
@@ -25,24 +26,20 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     $sql = "select * from articles where id=$id";
     $result = $db->query($sql);
     $row = $result->fetch();
+    if($row['description'] != "0"){
+        $EstDemande = true;
+    }
     while(!$row){
       header("location: acueilAdmin.php");
       exit;
     }
     $quantites=$row['quantites'];
+    $description=$row['description'];
     $designations=$row['designations'];
     $reference=$row['references'];
     $priorites=$row['priorites'];
     $namefile=$row['namefile'];
-}else{
-    $idda = $_GET['idda'];
-    $id = $_GET['id'];
-    $quantites=$_POST['quantites'];
-    $designations=$_POST['designations'];
-    $reference=$_POST['references'];
-    $priorites=$_POST['priorites'];
-    
-    
+}else{    
     //-------Gestion fichier
                 $uploaddir = 'fichiers/';
                 $uploadfile = $uploaddir . basename($_FILES['file']['name']);
@@ -57,12 +54,37 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     //-------Gestion fichier
     $namefile=htmlspecialchars($_FILES['file']['name']);
 
-
-
-  $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites', `namefile`='$namefile' where id=$id;";
-  $result = $db->query($sql);  
-  header("location: acueilAdmin1.php?id=$idda");
-  exit;  
+    if(!$EstDemande && isset($_POST['valideArticle'])){
+        $idda = $_GET['idda'];
+        $id = $_GET['id'];
+        $priorites=$_POST['priorites'];
+        $quantites=$_POST['quantites'];
+        $designations1=$_POST['designations'];
+        //$reference=$_POST['references'];
+        $Chaine=explode("REFE :",$designations1,2);
+        $reference=$Chaine[1];
+        $designations2=explode("DESI :",$Chaine[0],2);
+        $designations=$designations2[1];
+        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites', `namefile`='$namefile' where id=$id;";
+        //$result = $db->query($sql); 
+        $sth = $db->prepare($sql);    
+        $sth->execute(); 
+        header("location: acueilAdmin1.php?id=$idda");
+        exit; 
+    }
+    if($EstDemande && isset($_POST['valideArticle'])){
+        $idda = $_GET['idda'];
+        $id = $_GET['id'];
+        $description=htmlspecialchars($_POST['description']);
+        $priorites=$_POST['priorites'];
+        //echo $description;
+        $sql = "UPDATE `articles` SET `description`=?, `priorites`=?, `namefile`=? where id=?;";
+        //$result = $db->query($sql); 
+        $sth = $db->prepare($sql);    
+        $sth->execute(array($description,$priorites,$namefile,$id)); 
+        header("location: acueilAdmin2.php?id=$idda");
+        exit; 
+    } 
 }
 
 ?>
@@ -106,56 +128,15 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         <link rel="shortcut icon" href="./image/iconOnglet.png" />
     <title>METAL AFRIQUE</title>
     <script>
+        //console.log($ProduitRef);
     $( function() {
-        var availableTags = [
-        "roulement 6305",
-        "roulement 6206",
-        "pompe injection fourchette N°1 a reparer",
-        "roulement 6210",
-        "roulement NU-209",
-        "impedeur Ø18",
-        "pince a souder",
-        "metre cube de bois poutrelle 6x8 de 4m",
-        "chalumeau soudeur",
-        "vis BTR 12x50",
-        "vis tete fraisée BTR 5x20",
-        "dynamometre portée max 6t",
-        "dynamometre portée max 3,2t",
-        "fut de graisse MULTIS EP2",
-        "comparateur",
-        "palier UCP-205",
-        "raccord union droit de 12M-20",
-        "metre rond inox Ø12",
-        ];
+        
+        var availableTags = <?php echo json_encode($_SESSION['ProduitDesign']); ?>;
+        console.log(availableTags);
         $( ".designa" ).autocomplete({
-        source: availableTags
-        });
-    } );
-    </script>
-    <script>
-    $( function() {
-        var availableTag = [
-        "roulement 6305",
-        "roulement 6206",
-        "pompe injection fourchette N°1 a reparer",
-        "roulement 6210",
-        "roulement NU-209",
-        "impedeur Ø18",
-        "pince a souder",
-        "metre cube de bois poutrelle 6x8 de 4m",
-        "chalumeau soudeur",
-        "vis BTR 12x50",
-        "vis tete fraisée BTR 5x20",
-        "dynamometre portée max 6t",
-        "dynamometre portée max 3,2t",
-        "fut de graisse MULTIS EP2",
-        "comparateur",
-        "palier UCP-205",
-        "raccord union droit de 12M-20",
-        "metre rond inox Ø12",
-        ];
-        $( ".ref" ).autocomplete({
-        source: availableTag
+        minLength:3,
+        source: availableTags,
+        appendTo: "#add-new"
         });
     } );
     </script>
@@ -169,6 +150,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                 <div class="modal-body">
                                     <form action="#" method="POST" enctype="multipart/form-data">
                                         <div class="row">
+                                            <?php if(!$EstDemande){?>
                                             <div class="col-md-6">
                                                 <div class="mb-6 text-start">
                                                     <label class="form-label fw-bold" for="nom">Quantités</label>
@@ -182,12 +164,14 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                                 </div>
 
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3 text-start">
-                                                    <label class="form-label fw-bold" for="reference" >Références</label>
-                                                    <input class="form-control" type="text" value="<?php echo $quantites; ?>" name="references" id="example-da"  placeholder="Taper la reference">
+                                            <?php }else{?>
+                                                <div class="col-md-6">
+                                                    <div class="mb-6 text-start">
+                                                        <label class="form-label fw-bold" for="nom">Description de la demande</label>
+                                                        <textarea class="form-control" type="text" name="description" id="example-date-input" rows="8" placeholder="Mettez la description ici"><?php echo $description; ?></textarea>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            <?php }?>
                                             <div class="col-md-6">
                                                 <div class="mb-3 text-start">
                                                     <label class="form-label fw-bold" for="priorites" >Priorités</label>
@@ -272,7 +256,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                             <div class="col-md-12 text-end">
                                                 <div class="col-md-8 align-items-center col-md-12 text-end">
                                                     <div class="d-flex gap-2 pt-4">                           
-                                                        <a href="<?php echo "acueilAdmin1.php?id=$idda"; ?>"><input class="btn btn-danger  w-lg bouton" value="Annuler"></a>
+                                                        <a href="<?php if(!$EstDemande){echo "acueilAdmin1.php?id=$idda";}else{echo "acueilAdmin2.php?id=$idda";} ?>"><input class="btn btn-danger  w-lg bouton" value="Annuler"></a>
                                                         <input class="btn btn-success  w-lg bouton" name="valideArticle" type="submit" value="Enregistrer">
                                                     </div>
                                                 </div>

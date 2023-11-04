@@ -34,7 +34,7 @@ include 'connect.php';
 
 //$_SESSION['da'] = $nbReclamation;
 
-if($_SESSION['niveau'] == "admin"){
+if($_SESSION['niveau'] == "admin" || $_SESSION['niveau'] == "kemc"){
     // On definie le nombre de DA
     $sqlda = "SELECT COUNT(*) AS nb_articles FROM `da`;";
     // On prépare la requête
@@ -49,7 +49,7 @@ if($_SESSION['niveau'] == "admin"){
     $nbda = (int) $resultda['nb_articles'];
 
     // On détermine le nombre d'articles par page
-    $parPage = 6;
+    $parPage = 7;
 
     // On calcule le nombre de pages total
     $pages = ceil($nbda / $parPage);
@@ -202,7 +202,7 @@ if($_SESSION['niveau'] == "admin"){
     <!-- Content Row -->
     <div class="row header-item user text-start d-flex align-items-center w-75 p-3">      
                 <?php 
-                    if($_SESSION['niveau']=='admin'){
+                    if($_SESSION['niveau']=='admin' || $_SESSION['niveau']=='kemc'){
                 ?>
                     <div class="col-xl-3 col-md-6">
                         <a href="historique.php">
@@ -224,7 +224,7 @@ if($_SESSION['niveau'] == "admin"){
                     </div>
                 <?php
                     }
-                ?>                    
+                ?>                   
 
             <!-- Content Row -->
         <div class="navbar-header">
@@ -367,6 +367,8 @@ if($_SESSION['niveau'] == "admin"){
                                                                                     <th scope="col" class="fw-bold text-start">Nom de la D.A<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <th scope="col" class="fw-bold text-start">Date livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <th scope="col" class="fw-bold text-start">Durée DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                 </tr>
                                                                             </thead>
 
@@ -376,9 +378,25 @@ if($_SESSION['niveau'] == "admin"){
                                                                                         //if($article['status'] == 'termine'){
                                                                                 ?>                                                                              
                                                                                 <tr class="text-start">
-                                                                                    <td class=".bg-light"><a href="<?php if(!isset($_GET['page'])){echo "historiquePieces.php?id=$article[id]";}else{echo "historiquePieces.php?id=$article[id]&page=$_GET[page]";}?>" class="btn  w-lg bouton" data-toggle="tooltip" data-placement="top" title="Ouvrir la DA"><i class="bx me-2"></i><?php echo "DA00".$article['id']; ?></a></td>
+                                                                                    <td class=".bg-light"><a href="<?php if(!isset($_GET['page'])){echo "historiquePieces.php?id=$article[id]";}else{echo "historiquePieces.php?id=$article[id]";}?>" class="btn  w-lg bouton" data-toggle="tooltip" data-placement="top" title="Ouvrir la DA"><i class="bx me-2"></i><?php echo "DA00".$article['id']; ?></a></td>
                                                                                     <td><?= $article['user'] ?></td>
-                                                                                    <td><?= $article['datecreation'] ?></td> 
+                                                                                    <td><?= $article['datecreation'] ?></td>
+                                                                                    <td><span class="<?php if($article['datelivraison'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivraison'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivraison'];}?></span>
+                                                                                    </td>
+                                                                                    <td><?php
+                                                                                        //$now = time();
+                                                                                        $dateCreation = strtotime($article['datecreation']);
+                                                                                        $diff = $dateCreation - strtotime($article['datelivraison']);
+                                                                                        if($article['datelivraison'] == null){
+                                                                                            echo "* ----- *";
+                                                                                        }else{
+                                                                                            if(floor($diff/(60*60*24))==0){
+                                                                                                echo "Moins de 24H";
+                                                                                            }else{
+                                                                                                echo floor($diff/(60*60*24))."  (JOURS)";
+                                                                                            }
+                                                                                        }
+                                                                                    ?></td> 
                                                                                 </tr>
                                                                                 <?php
                                                                                         }

@@ -12,11 +12,28 @@
     // On se connecte à là base de données
     include 'connect.php';
 
-    if(isset($_POST['valideArticle'])){
-      
-    }
+    $mess1="";
 
-    //Suprimer articles carrément
+    if(isset($_POST['valideLivraison'])){
+        if(!empty($_POST['status'])){
+            //echo $_POST['quantites'];
+              $status=htmlspecialchars($_POST['status']);
+              $id=htmlspecialchars($_POST['id']);
+              $user=htmlspecialchars($_POST['userLivrer']);
+              $req ="UPDATE articles SET statuspart=?, actifmang=2, rege=0, userlivrer=? WHERE id=$id;"; 
+              //$db->query($req); 
+              $reqtitre = $db->prepare($req);
+              $reqtitre->execute(array($status,$user));
+              
+              if(isset($_GET['id'])){
+                  $id = $_GET['id'];
+                  header("location:acueilAdmin2.php?id=$id");
+                  exit;
+              }
+          }elseif($_POST['livraison'] > ($_POST['quantites'])){
+            $mess1 = "error";
+          }      
+    }
 
     // On détermine le nombre total d'articles
     $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations`;";
@@ -32,6 +49,21 @@
     
     $nbReclamation = (int) $result['nb_articles'];
 
+    // On détermine le nombre total d'articles
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0;";
+    // On prépare la requête
+    $query = $db->prepare($sql);
+
+    // On exécute
+    $query->execute();
+    
+    // On récupère le nombre d'articles
+    $result = $query->fetch();
+  
+    $nbRege = (int) $result['nb_articles'];
+
+
+
 
     // On détermine le nombre total d'articles
     $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
@@ -46,13 +78,24 @@
     $result1 = $query1->fetch();
 
     $nbutilisateur = (int) $result1['nb_utilisateur'];
-   
-    //Pour la connexion DA
 
-    if($_SESSION['niveau']=='kemc'){
+    // On détermine le nombre total de demande
+    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0';";
+    // On prépare la requête
+    $query8 = $db->prepare($sql8);
+
+    // On exécute
+    $query8->execute();
+    
+    // On récupère le nombre d'articles
+    $result8 = $query8->fetch();
+  
+    $nbRegeDemande = (int) $result8['nb_articles']; 
+
+    if($_SESSION['niveau'] =='mang' || $_SESSION['niveau'] =='admin'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=1 ;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0' and `rege`=1;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -75,7 +118,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=1  ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `description`!='0' and `actifmang`=0 and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -88,42 +131,8 @@
 
         // On récupère les valeurs dans un tableau associatif
         $articles = $query->fetchAll(PDO::FETCH_ASSOC);
+
     }
-
-    //-----------------------DA
-
-    // ----------- On definie le nombre de commande a approuvées
-    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
-    // On prépare la requête
-    $queryartA = $db->prepare($sqlartA);
-
-    // On exécute
-    $queryartA->execute();
-    
-    // On récupère le nombre d'articles
-    $resultartA = $queryartA->fetch();
-    
-    $nbartA = (int) $resultartA['nb_articles'];
-
-    // $nbArticles=0;
-    // $articles=[];
-    // $pages=0;
-
-    // ----------- On definie le nombre de commande a approuvées
-    $sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2";
-    // On prépare la requête
-    $queryartA1 = $db->prepare($sqlartA1);
-
-    // On exécute
-    $queryartA1->execute();
-
-    // On récupère le nombre d'articles
-    $resultartA1 = $queryartA1->fetch();
-
-    $nbartADemande = (int) $resultartA1['nb_articles'];
-    
-    
-
 
 
 ?>
@@ -144,8 +153,6 @@
         <link href="css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
         <!-- Icons Css -->
         <link href="css/icons.min.css" rel="stylesheet" type="text/css" />
-        <!-- App Css-->
-        <link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
 
         <!-- Sweet Alert -->
         <link href="./libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
@@ -156,6 +163,9 @@
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
         <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+        <!-- App Css-->
+        <link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
         
           <!-- Style Css-->
           <link href="./style.css" id="app-style" rel="stylesheet" type="text/css" />
@@ -221,7 +231,7 @@
                                         <div class="col-md-6">
                                             <div class="mb-6 text-start">
                                                 <label class="form-label fw-bold" for="nom">Message</label>
-                                                <textarea class="form-control" placeholder="Taper votre reclamation svp!" name="message" id="example-date-input" rows="8"></textarea>
+                                                <textarea class="form-control" placeholder="Taper votre réclamation destinée à l'administrateur svp!" name="message" id="example-date-input" rows="8"></textarea>
                                             </div>
                                         </div>  
                                         <div class="col-md-6">
@@ -258,20 +268,19 @@
 
             </div>
         <!-- Content Row -->
-        <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
-                    <!-- Pending Requests Card Example -->
+                <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
                     <?php 
-                        if($_SESSION['niveau']=='admin' && $nbReclamation){
+                        if(($_SESSION['niveau'] !='kemc')){
                         ?>
                         <div class="col-xl-3 col-md-6">
-                            <a href="reclamation.php">
-                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
+                            <a href="rejet.php">
+                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient">
                                     <div class="card-body">
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                    Reclamations</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
+                                                    Demandes rejetées</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbRegeDemande;?></div>
                                             </div>
                                             <div class="col-auto">
                                                 <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -283,83 +292,7 @@
                         </div> 
                     <?php
                         }
-                    ?>  
-                    
-                    <?php 
-                        if($_SESSION['niveau']=='admin'){
-                            ?>    
-                        <div class="col-xl-3 col-md-6t">
-                            <a href="utilisateur.php">
-                                <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Utilisateurs (All)</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbutilisateur;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
                     ?>
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <?php 
-                        if($_SESSION['niveau']=='kemc'){
-                    ?>
-                        <div class="col-xl-3 col-md-6">
-                            <a href="commandeAapprouver.php">
-                                <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
-                                                </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres (Piéces) : <?php echo $nbartA;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
-                    ?>
-
-                    <?php 
-                        if($_SESSION['niveau']=='kemc'){
-                    ?>
-                        <div class="col-xl-3 col-md-6">
-                            <a href="commandeAapprouver1.php">
-                                <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
-                                                </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nbre (demandes) : <?php echo $nbartADemande;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
-                    ?> 
                 </div>
 
                 <!-- Content Row -->
@@ -473,7 +406,7 @@
                                     <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
                                         <li class="nav-item">
                                             <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Commandes à approuver commandes</span> 
+                                                <span class="fw-bold font-size-15">Commandes rejetées</span> 
                                             </a>
                                         </li>                              
                                     </ul>
@@ -490,7 +423,7 @@
                                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                                     <button class="accordion-button fw-medium" type="button" data-bs-toggle="collapse"
                                                                         data-bs-target="#flush-collapseOne" aria-expanded="true" aria-controls="flush-collapseOne">
-                                                                        Liste des commandes à approuver commandes
+                                                                        Liste des commandes rejetées 
                                                                     </button>
                                                                 </h2>
                                                                 <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
@@ -499,21 +432,25 @@
                                                                         <div class="table-responsive">
                                                                             <table class="table table-nowrap align-middle">
                                                                                 <thead class="table-light">
-                                                                                    <tr>                  
-                                                                                        <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">References<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <tr>   
+                                                                                    <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
+                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <?php 
+                                                                                        if(($_SESSION['niveau']=='mang' && $nbRege)){
+                                                                                        ?>
+                                                                                            <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <?php 
+                                                                                        }
+                                                                                        ?>
                                                                                     </tr>
                                                                                 </thead>
     
                                                                                 <tbody>
+                                                                                <?php require_once 'fonctions.php'; ?>
                                                                                     <?php
                                                                                         $i=0;
                                                                                         foreach($articles as $article){
@@ -521,118 +458,125 @@
                                                                                             //if($article['status'] == 'termine'){
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
-                                                                                        <td><?php echo "DA00".$article['idda']; ?></td>
-                                                                                        <td><?= $article['quantites'] ?></td>
-                                                                                        <td><?= $article['designations'] ?></td>
-                                                                                        <td><?= $article['references'] ?></td>
+                                                                                    <td><?php echo "DA00".$article['idda']; ?></td>
+                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="<?php if($article['statuspart'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['statuspart'] ?></span></td>
-                                                                                        <td><?= $article['livraisonPart'] ?></td>
                                                                                         <td><?= $article['userLivrer'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
-                                                                                        <?php 
-                                                                                                if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
+                                                                                            <?php 
+                                                                                                if($_SESSION['niveau']=='mang'){
                                                                                             ?>
-                                                                                            <input type="hidden" class="idr" value="<?php echo $article['id']?>">
-                                                                                            <input type="hidden" class="idreg" value="<?php echo $article['id']?>">
-                                                                                            <input type="hidden" class="quantites" value="<?php echo $article['quantites']?>">
-                                                                                            <input type="hidden" class="statuspart" value="<?php echo $article['statuspart']?>">
-                                                                                            <input type="hidden" class="livraisonPart" value="<?php echo $article['livraisonPart']?>">
-                                                                                            <a href="javascript:void(0);" id="approuverCommande<?php echo $i; ?>" class="btn btn-success"><ion-icon name="arrow-undo-outline"></ion-icon>Accepter</a>
-                                                                                            <a href="javascript:void(0);" id="rejeterCommande<?php echo $i; ?>" class="btn btn-danger "><ion-icon name="arrow-undo-outline"></ion-icon>Rejeter</a>
-                                                                                            <script>
-                                                                                                    $(document).ready( function(){
-                                                                                                        $('#approuverCommande<?php echo $i; ?>').click(function(e) {
-                                                                                                            var idr = $(this).closest("tr").find(".idr").val();
-                                                                                                            var quantites = $(this).closest("tr").find(".quantites").val();
-                                                                                                            var stat = $(this).closest("tr").find(".statuspart").val();
-                                                                                                            var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
-                                                                                                            e.preventDefault();
-                                                                                                            Swal.fire({
-                                                                                                            title: 'En es-tu sure?',
-                                                                                                            text: 'Voulez-vous vraiment Accepter cette livraison ?',
-                                                                                                            icon: 'warning',
-                                                                                                            showCancelButton: true,
-                                                                                                            confirmButtonColor: '#3085d6',
-                                                                                                            cancelButtonColor: '#d33',
-                                                                                                            confirmButtonText: "ACCEPTER LA LIVRAISON",
-                                                                                                            }).then((result) => {
-                                                                                                                if (result.isConfirmed) {                                                                                                                  
-                                                                                                                    $.ajax({
-                                                                                                                            type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart+'&status='+stat,
-                                                                                                                            //data: str,
-                                                                                                                            success: function( response ) {
-                                                                                                                                //console.log(url);
-                                                                                                                                Swal.fire({
-                                                                                                                                    text: 'Commande acceptée avec success!',
-                                                                                                                                    icon: 'success',
-                                                                                                                                    timer: 3000,
-                                                                                                                                    showConfirmButton: false,
-                                                                                                                                });
-                                                                                                                                location.reload();
-                                                                                                                            },
-                                                                                                                            error: function( response ) {
-                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
-                                                                                                                                //console.log( response );
-                                                                                                                            }						
-                                                                                                                    });
-                                                                                                                }
-                                                                                                            });
-                                                                                                        });
-                                                                                                    });
-                                                                                            </script>
-                                                                                            <script>
-                                                                                                    $(document).ready( function(){
-                                                                                                        $('#rejeterCommande<?php echo $i; ?>').click(function(e) {
-                                                                                                            var id = $(this).closest("tr").find(".idr").val();
-                                                                                                            e.preventDefault();
-                                                                                                            Swal.fire({
-                                                                                                            title: 'En es-tu sure?',
-                                                                                                            text: 'Voulez-vous vraiment rejeter la livraison?',
-                                                                                                            icon: 'warning',
-                                                                                                            showCancelButton: true,
-                                                                                                            confirmButtonColor: '#3085d6',
-                                                                                                            cancelButtonColor: '#d33',
-                                                                                                            confirmButtonText: "REJETER LA LIVRAISON",
-                                                                                                            }).then((result) => {
-                                                                                                                if (result.isConfirmed) {                                                                                                                  
-                                                                                                                    $.ajax({
-                                                                                                                            type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idreg='+id,
-                                                                                                                            //data: str,
-                                                                                                                            success: function( response ) {
-                                                                                                                                Swal.fire({
-                                                                                                                                    text: 'livraison rejetée avec success!',
-                                                                                                                                    icon: 'success',
-                                                                                                                                    timer: 3000,
-                                                                                                                                    showConfirmButton: false,
-                                                                                                                                });
-                                                                                                                                location.reload();
-                                                                                                                            },
-                                                                                                                            error: function( response ) {
-                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
-                                                                                                                                //console.log( response );
-                                                                                                                            }						
-                                                                                                                    });
-                                                                                                                }
-                                                                                                            });
-                                                                                                        });
-                                                                                                    });
-                                                                                            </script>
+                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
+                                                                                                <a data-bs-toggle="modal" data-bs-target=".add-newlivrer" class="btn btn-success  w-lg "><i class=""></i>Modifier</a>
                                                                                             <?php
                                                                                             }
-                                                                                        }
-                                                                                        ?>
+                                                                                            ?>
                                                                                         </td> 
                                                                                     </tr>
+                                                                                    <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="fileModalLabel">Description de la demande</h5>
+                                                                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>  
+                                                                                                <h6 class="form-label fw-bold" for="nom" style="margin-left:25px; margin-top:10px;">Message :</h6>
+                                                                                                <div class="modal-body border border-warning" style="margin:70px; border-radius: 15px 30px; margin-top:20px; background-color: #fef1df;">
+                                                                                                    <h4><?php echo $article['description']; ?></h4>                                                                                                
+                                                                                                </div>                                                                                             
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="modal fade add-newlivrer" id="add-newlivrer" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Modifier la livraison de la commande</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="#" method="POST">
+                                    <div class="row">
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="livraison">id</label>
+                                                <input class="form-control" type="text" value="<?= $article['id'] ?>" name="id" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="quantites">id</label>
+                                                <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                            </div>
+                                        </div> 
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="priorites">Status</label>
+                                                <select class="form-control" name="status" value="Attente livraison">
+                                                    <option>Attente approbation</option>
+                                                    <option>livraison partielle</option>
+                                                    <option>Terminé</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="user" ></label>
+                                                <input class="form-control " type="text" value="<?php
+                                                    $array = explode(' ', $_SESSION['nomcomplet']);
+                                                    echo $array[0]; 
+                                                ?>" name="userLivrer" id="example-date-input">
+                                            </div>
+                                        </div>  
+                                </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12 text-end">
+                                            <div class="col-md-8 align-items-center col-md-12 text-end">
+                                                <div class="d-flex gap-2 pt-4"> 
+                                                    <?php if($mess1 == "error"){ ?> 
+                                                            <script>    
+                                                                Swal.fire({
+                                                                    text: 'La quantité à livrer est supérieure à la quantité demandée!',
+                                                                    icon: 'error',
+                                                                    timer: 3500,
+                                                                    showConfirmButton: false,
+                                                                });
+                                                            </script> 
+                                                        <?php } 
+                                                    ?>                          
+                                                    <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                    <input class="btn btn-success  w-lg bouton" name="valideLivraison" type="submit" value="Enregistrer">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>                             
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+                
+                                                                                    <?php
+                                                                                            }
+                                                                                        //}
+                                                                                    ?>
                                                                                 </tbody>
                                                                             </table>
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                    <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                    <?php 
+                                                                                    if($_SESSION['niveau']=='kemc'){
+                                                                                    ?>
+                                                                                        <a data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter Commande</a>
+                                                                                    <?php
+                                                                                    }
+                                                                                    ?>
+                                                                                        <a href="rejet.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
                                                                                 <div class="d-flex gap-2 pt-4">
                                                                                 </div>
@@ -668,6 +612,7 @@
                                            </div>
                                         </div>
                                     </div>
+                   
                                     <div class="modal fade add-new" id="add-new" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl modal-dialog-centered">
                         <div class="modal-content">
@@ -703,10 +648,10 @@
                                                 <input class="form-control" type="text" value="" name="priorites" id="example-date-input" placeholder="Taper la propriété">
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="priorites">Status</label>
-                                                <select class="form-control" name="status">
+                                                <select class="form-control" name="status" value="Attente livraison">
                                                     <option>Attente approbation</option>
                                                     <option>Attente livraison</option>
                                                     <option>livraison partielle</option>
@@ -731,10 +676,10 @@
                                                 ?>" name="idda" id="example-date-input">
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="livraison">Livraison</label>
-                                                <input class="form-control" type="text" value="" name="livraison" id="example-date-input" placeholder="Noter la livraison">
+                                                <input class="form-control" type="text" value="0" name="livraison" id="example-date-input" placeholder="Noter la livraison">
                                             </div>
                                         </div>   
                                 </div>
@@ -774,6 +719,7 @@
                                     <div class="row mt-2">
                                         <div class="col-md-12 text-end">
                                             <div class="col-md-8 align-items-center col-md-12 text-end">
+                                                <?php if($mess == "error"){ ?> <h4 style="color:red; margin-buttom:50px;" id="rejet">Erreur remplir tous les champs svp</h4><?php } ?>
                                                 <div class="d-flex gap-2 pt-4">                           
                                                     <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
                                                     <input class="btn btn-success  w-lg bouton" name="valideArticle" type="submit" value="Enregistrer">

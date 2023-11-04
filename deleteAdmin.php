@@ -24,17 +24,33 @@
     if(isset($_GET['idr']) && isset($_GET['quantites']) && isset($_GET['livraisonPart']) && $_SESSION['niveau']=="kemc"){
         $id = $_GET['idr'];
         $livraison = $_GET['livraisonPart'];
+        $status = $_GET['status'];
         $reslt = $_GET['quantites'] - $_GET['livraisonPart'];
         if($reslt>0){
-            $sql = "UPDATE `articles` SET `actifmang`=0, `quantites`=$reslt,`livraison`=$livraison where id=$id";
-            $db->query($sql);
-        }else{
+            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(),`status`=?, `quantites`=?,`livraison`=? where id=?";
+            //$db->query($sql);
+            $reqtitre = $db->prepare($sql);
+            $reqtitre->execute(array($status,$reslt,$livraison,$id));
+        }elseif($reslt == 0){
             //$status="Terminé";
-            $sql = "UPDATE `articles` SET `actifmang`=0, `quantites`=$reslt,  `status`='Terminé',`livraison`=$livraison where id=$id";
-            $db->query($sql);
+            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(), `quantites`=$reslt,  `status`='Terminé',`livraison`=$livraison where id=$id";
+            //$db->query($sql);
+            $reqtitre = $db->prepare($sql);
+            $reqtitre->execute(array($reslt,$livraison,$id));
         }
 
         header("location:commandeAapprouver.php");
+        exit;
+    }
+    if(isset($_GET['idr']) && $_SESSION['niveau']=="kemc"){
+        $id = $_GET['idr'];
+        $status = $_GET['status'];
+        $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(),`status`=? where id=?";
+        //$db->query($sql);
+        $reqtitre = $db->prepare($sql);
+        $reqtitre->execute(array($status,$id));
+
+        header("location:commandeAapprouver1.php");
         exit;
     }
     if(isset($_GET['idreg']) && $_SESSION['niveau']=="kemc"){

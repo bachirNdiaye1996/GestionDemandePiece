@@ -52,7 +52,7 @@
     if($_SESSION['niveau']=='kemc'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=1 ;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=2;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -75,7 +75,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=1  ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=2 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -93,22 +93,6 @@
     //-----------------------DA
 
     // ----------- On definie le nombre de commande a approuvées
-    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
-    // On prépare la requête
-    $queryartA = $db->prepare($sqlartA);
-
-    // On exécute
-    $queryartA->execute();
-    
-    // On récupère le nombre d'articles
-    $resultartA = $queryartA->fetch();
-    
-    $nbartA = (int) $resultartA['nb_articles'];
-
-    // $nbArticles=0;
-    // $articles=[];
-    // $pages=0;
-
     // ----------- On definie le nombre de commande a approuvées
     $sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2";
     // On prépare la requête
@@ -259,6 +243,8 @@
             </div>
         <!-- Content Row -->
         <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
+                    
+
                     <!-- Pending Requests Card Example -->
                     <?php 
                         if($_SESSION['niveau']=='admin' && $nbReclamation){
@@ -283,8 +269,7 @@
                         </div> 
                     <?php
                         }
-                    ?>  
-                    
+                    ?>   
                     <?php 
                         if($_SESSION['niveau']=='admin'){
                             ?>    
@@ -322,31 +307,6 @@
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
                                                 </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres (Piéces) : <?php echo $nbartA;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
-                    ?>
-
-                    <?php 
-                        if($_SESSION['niveau']=='kemc'){
-                    ?>
-                        <div class="col-xl-3 col-md-6">
-                            <a href="commandeAapprouver1.php">
-                                <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
-                                                </div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">Nbre (demandes) : <?php echo $nbartADemande;?></div>
                                             </div>
                                             <div class="col-auto">
@@ -359,7 +319,7 @@
                         </div>
                     <?php
                         }
-                    ?> 
+                    ?>
                 </div>
 
                 <!-- Content Row -->
@@ -501,12 +461,9 @@
                                                                                 <thead class="table-light">
                                                                                     <tr>                  
                                                                                         <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">References<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -514,6 +471,7 @@
                                                                                 </thead>
     
                                                                                 <tbody>
+                                                                                <?php require_once 'fonctions.php'; ?>
                                                                                     <?php
                                                                                         $i=0;
                                                                                         foreach($articles as $article){
@@ -522,12 +480,9 @@
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
                                                                                         <td><?php echo "DA00".$article['idda']; ?></td>
-                                                                                        <td><?= $article['quantites'] ?></td>
-                                                                                        <td><?= $article['designations'] ?></td>
-                                                                                        <td><?= $article['references'] ?></td>
+                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="<?php if($article['statuspart'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['statuspart'] ?></span></td>
-                                                                                        <td><?= $article['livraisonPart'] ?></td>
                                                                                         <td><?= $article['userLivrer'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
@@ -541,13 +496,14 @@
                                                                                             <input type="hidden" class="livraisonPart" value="<?php echo $article['livraisonPart']?>">
                                                                                             <a href="javascript:void(0);" id="approuverCommande<?php echo $i; ?>" class="btn btn-success"><ion-icon name="arrow-undo-outline"></ion-icon>Accepter</a>
                                                                                             <a href="javascript:void(0);" id="rejeterCommande<?php echo $i; ?>" class="btn btn-danger "><ion-icon name="arrow-undo-outline"></ion-icon>Rejeter</a>
+                                                                                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
                                                                                             <script>
                                                                                                     $(document).ready( function(){
                                                                                                         $('#approuverCommande<?php echo $i; ?>').click(function(e) {
                                                                                                             var idr = $(this).closest("tr").find(".idr").val();
-                                                                                                            var quantites = $(this).closest("tr").find(".quantites").val();
+                                                                                                            //var quantites = $(this).closest("tr").find(".quantites").val();
                                                                                                             var stat = $(this).closest("tr").find(".statuspart").val();
-                                                                                                            var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
+                                                                                                            //var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
                                                                                                             e.preventDefault();
                                                                                                             Swal.fire({
                                                                                                             title: 'En es-tu sure?',
@@ -561,7 +517,7 @@
                                                                                                                 if (result.isConfirmed) {                                                                                                                  
                                                                                                                     $.ajax({
                                                                                                                             type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart+'&status='+stat,
+                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&status='+stat,
                                                                                                                             //data: str,
                                                                                                                             success: function( response ) {
                                                                                                                                 //console.log(url);
@@ -621,18 +577,34 @@
                                                                                                         });
                                                                                                     });
                                                                                             </script>
-                                                                                            <?php
-                                                                                            }
-                                                                                        }
-                                                                                        ?>
                                                                                         </td> 
                                                                                     </tr>
+                                                                                    <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="fileModalLabel">Description de la demande</h5>
+                                                                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>  
+                                                                                                <h6 class="form-label fw-bold" for="nom" style="margin-left:25px; margin-top:10px;">Message :</h6>
+                                                                                                <div class="modal-body border border-warning" style="margin:70px; border-radius: 15px 30px; margin-top:20px; background-color: #fef1df;">
+                                                                                                    <h4><?php echo $article['description']; ?></h4>                                                                                                
+                                                                                                </div>                                                                                             
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
                                                                                 </tbody>
+                                                                                <?php
+                                                                                    }
+                                                                                }
+                                                                                ?>
                                                                             </table>
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                    <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                    <a href="commandeAapprouver.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
                                                                                 <div class="d-flex gap-2 pt-4">
                                                                                 </div>

@@ -140,52 +140,6 @@
             </div>
         <!-- Content Row -->
         <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
-                    
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6t">
-                        <a href="acueilAdmin.php">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Commandes (All)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbArticles;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Pending Requests Card Example -->
-                    <?php 
-                        if($_SESSION['niveau']=='admin' && $nbReclamation){
-                            ?>  
-                            <div class="col-xl-3 col-md-6">
-                                <a href="reclamation.php">
-                                    <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient"  id="clignoter2">
-                                        <div class="card-body">
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col mr-2">
-                                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                        Reclamations</div>
-                                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
-                                                </div>
-                                                <div class="col-auto">
-                                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                    <?php
-                        }
-                    ?>
                     <div class="col-xl-3 col-md-6t">
                         <a href="utilisateur.php">
                             <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">

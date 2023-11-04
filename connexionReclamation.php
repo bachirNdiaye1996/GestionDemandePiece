@@ -10,11 +10,19 @@
     if(isset($_POST['valide'])){
         if(!empty($_POST['message'])){
             $message=htmlspecialchars($_POST['message']);
-            $nomcomplet=$_SESSION['nomcomplet'] ;
-            $insertUser=$db->prepare("INSERT into `reclamations`(`id`,`message`,`user`,`datecreation`) value(NULL,?,?,current_timestamp())");
-            $insertUser->execute(array($message,$nomcomplet));
-            header('location:acueilAdmin.php');
-            exit;
+            $nomcomplet=$_SESSION['nomcomplet'];
+            $nomDA=htmlspecialchars($_POST['nomDA']);
+            if($_SESSION['niveau'] == 'kemc'){
+                $insertUser=$db->prepare("INSERT into `reclamations`(`id`,`message`,`user`,`datecreation`,`nomda`,`actifkemb`) value(NULL,?,?,current_timestamp(),?,1)");
+                $insertUser->execute(array($message,$nomcomplet,$nomDA));
+                header('location:acueilAdmin.php');
+                exit;
+            }elseif($_SESSION['niveau'] == 'mang'){
+                $insertUser=$db->prepare("INSERT into `reclamations`(`id`,`message`,`user`,`datecreation`,`nomda`,`actifmang`) value(NULL,?,?,current_timestamp(),?,1)");
+                $insertUser->execute(array($message,$nomcomplet,$nomDA));
+                header('location:acueilAdmin.php');
+                exit;
+            }
         }     
     }
 

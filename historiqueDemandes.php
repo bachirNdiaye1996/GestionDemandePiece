@@ -17,20 +17,20 @@
 
 
     if(isset($_POST['valideLivraison'])){
-        if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){
-          echo $_POST['quantites'];
+        if(!empty($_POST['status'])){
+          //echo $_POST['quantites'];
             $status=htmlspecialchars($_POST['status']);
             $id=htmlspecialchars($_POST['id']);
             $user=htmlspecialchars($_POST['userLivrer']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $req ="UPDATE articles SET statuspart=?, livraisonPart=?, actifmang=1, userlivrer=? WHERE id=$id;"; 
+            $req ="UPDATE articles SET statuspart=?, livraisonPart=?, actifmang=2, userlivrer=? WHERE id=$id;"; 
             //$db->query($req); 
             $reqtitre = $db->prepare($req);
             $reqtitre->execute(array($status,$livraison,$user));
             
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
-                header("location:acueilAdmin1.php?id=$id");
+                header("location:acueilAdmin2.php?id=$id");
                 exit;
             }
         }elseif($_POST['livraison'] > ($_POST['quantites'])){
@@ -66,7 +66,7 @@
             $insertUser->execute(array($description,$priorites,$status,$livraison,$user,$idda,$namefile));
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
-                header("location:acueilAdmin1.php?id=$id&mess=success");
+                header("location:acueilAdmin2.php?id=$id&mess=success");
                 exit;
             }
             
@@ -74,7 +74,7 @@
           $mess = "error";
         } 
 
-        if(!empty($_POST['quantites']) && !empty($_POST['designations']) && !empty($_POST['priorites'])){
+        if(!empty($_POST['quantites']) && !empty($_POST['designations']) && !empty($_POST['references']) && !empty($_POST['priorites'])){
             //-------Gestion fichier
                 $uploaddir = 'fichiers/';
                 $uploadfile = $uploaddir . basename($_FILES['file']['name']);
@@ -90,17 +90,13 @@
             //-------Gestion fichier
             $namefile=htmlspecialchars($_FILES['file']['name']);
             $quantites=htmlspecialchars($_POST['quantites']);
-            $designations1=htmlspecialchars($_POST['designations']);
-            //$references1=htmlspecialchars($_POST['references']);
+            $designations=htmlspecialchars($_POST['designations']);
+            $references=htmlspecialchars($_POST['references']);
             $priorites=htmlspecialchars($_POST['priorites']);
             $status=htmlspecialchars($_POST['status']);
             $user=htmlspecialchars($_POST['user']);
             $idda=htmlspecialchars($_POST['idda']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $Chaine=explode("REFE :",$designations1,2);
-            $references=$Chaine[1];
-            $designations2=explode("DESI :",$Chaine[0],2);
-            $designations=$designations2[1];
             $insertUser=$db->prepare("INSERT INTO `articles` (`id`, `quantites`, `designations`, `references`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`) VALUES (NULL, ?, ?, ?, ?, ?, current_timestamp(),?,?,?,?);')");
             $insertUser->execute(array($quantites,$designations,$references,$priorites,$status,$livraison,$user,$idda,$namefile));
             if(isset($_GET['id'])){
@@ -129,7 +125,7 @@
     $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `description`!=NULL and `actifkemb`=0;";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `description`!='0' and `actifkemb`=0;";
     // On prépare la requête
     $query = $db->prepare($sql);
 
@@ -161,11 +157,11 @@
     
     //Pour la connexion DA
 
-    if(isset($_GET['id']) && $_SESSION['niveau']=='kemc'){
+    if((isset($_GET['id']) && $_SESSION['niveau']=='kemc') || (isset($_GET['id']) && $_SESSION['niveau']=='admin')){
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `idda`=$id and `description`='0';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`!='0' and `description`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -180,62 +176,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `description`!='0' and `description`!='';";        
-        // On prépare la requête
-        $queryd = $db->prepare($sqld);
-
-        // On exécute
-        $queryd->execute();
-
-        // On récupère le nombre d'articles
-        $resultd = $queryd->fetch();
-
-        $nbDemande = (int) $resultd['nb_articles'];
-
-        //-----Fin
-
-        // On détermine le nombre d'articles par page
-        $parPage = 7;
-
-        // On calcule le nombre de pages total
-        $pages = ceil($nbArticles / $parPage);
-
-        // Calcul du 1er article de la page
-        $premier = ($currentPage * $parPage) - $parPage;
-
-        //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `description`='0' and `idda`= '$id' and `quantites`>=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
-
-        // On prépare la requête
-        $query = $db->prepare($sql);
-
-        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-        // On exécute
-        $query->execute();
-
-        // On récupère les valeurs dans un tableau associatif
-        $articles = $query->fetchAll(PDO::FETCH_ASSOC);
-    }elseif(isset($_GET['id']) && $_SESSION['niveau'] =='mang'){
-        $id = $_GET['id'];
-
-        // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `quantites`>0 and `idda`=$id and `actifmang`=0 and `actifkemb`=0;";
-        
-        // On prépare la requête
-        $query = $db->prepare($sql);
-
-        // On exécute
-        $query->execute();
-
-        // On récupère le nombre d'articles
-        $result = $query->fetch();
-
-        $nbArticles = (int) $result['nb_articles'];
-        //Pour demande
-
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `description`!='0';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`!='0' and `description`!='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -260,7 +201,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `quantites`>0 and `idda`= '$id' and `actifmang`=0 and `actifkemb`=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`=$id and `description`!='0' and `description`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -273,84 +214,9 @@
 
         // On récupère les valeurs dans un tableau associatif
         $articles = $query->fetchAll(PDO::FETCH_ASSOC);
-
-    }elseif(isset($_GET['id']) && $_SESSION['niveau']=='admin'){
-        $id = $_GET['id'];
-
-        // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `idda`=$id;";
-        
-        // On prépare la requête
-        $query = $db->prepare($sql);
-
-        // On exécute
-        $query->execute();
-
-        // On récupère le nombre d'articles
-        $result = $query->fetch();
-
-        $nbArticles = (int) $result['nb_articles'];
-        //Pour demande
-
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `description`!='0';";
-        
-        // On prépare la requête
-        $queryd = $db->prepare($sqld);
-
-        // On exécute
-        $queryd->execute();
-
-        // On récupère le nombre d'articles
-        $resultd = $queryd->fetch();
-
-        $nbDemande = (int) $resultd['nb_articles'];
-
-        //-----Fin
-
-        // On détermine le nombre d'articles par page
-        $parPage = 7;
-
-        // On calcule le nombre de pages total
-        $pages = ceil($nbArticles / $parPage);
-
-        // Calcul du 1er article de la page
-        $premier = ($currentPage * $parPage) - $parPage;
-
-        //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`= '$id' and `actifkemb`= 0 and `quantites`>=0 and `actif`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
-
-        // On prépare la requête
-        $query = $db->prepare($sql);
-
-        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
-
-        // On exécute
-        $query->execute();
-
-        // On récupère les valeurs dans un tableau associatif
-        $articles = $query->fetchAll(PDO::FETCH_ASSOC);
-
     }
 
-    //-----------------------DA
 
-    // ----------- On definie le nombre de commande a approuvées
-    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
-    // On prépare la requête
-    $queryartA = $db->prepare($sqlartA);
-
-    // On exécute
-    $queryartA->execute();
-    
-    // On récupère le nombre d'articles
-    $resultartA = $queryartA->fetch();
-    
-    $nbartA = (int) $resultartA['nb_articles'];
-
-    // $nbArticles=0;
-    // $articles=[];
-    // $pages=0;
     
 ?>
 
@@ -392,13 +258,56 @@
         <link rel="shortcut icon" href="image/iconOnglet.png" />
     <title>METAL AFRIQUE</title>
     <script>
-        //console.log($ProduitRef);
     $( function() {
-        
-        var availableTags = <?php echo json_encode($_SESSION['ProduitDesign']); ?>;
-        console.log(availableTags);
+        var availableTags = [
+        "roulement 6305",
+        "roulement 6206",
+        "pompe injection fourchette N°1 a reparer",
+        "roulement 6210",
+        "roulement NU-209",
+        "impedeur Ø18",
+        "pince a souder",
+        "metre cube de bois poutrelle 6x8 de 4m",
+        "chalumeau soudeur",
+        "vis BTR 12x50",
+        "vis tete fraisée BTR 5x20",
+        "dynamometre portée max 6t",
+        "dynamometre portée max 3,2t",
+        "fut de graisse MULTIS EP2",
+        "comparateur",
+        "palier UCP-205",
+        "raccord union droit de 12M-20",
+        "metre rond inox Ø12",
+        ];
         $( ".designa" ).autocomplete({
-        minLength:3,
+        source: availableTags,
+        appendTo: "#add-new"
+        });
+    } );
+    </script>
+        <script>
+    $( function() {
+        var availableTags = [
+        "roulement 6305",
+        "roulement 6206",
+        "pompe injection fourchette N°1 a reparer",
+        "roulement 6210",
+        "roulement NU-209",
+        "impedeur Ø18",
+        "pince a souder",
+        "metre cube de bois poutrelle 6x8 de 4m",
+        "chalumeau soudeur",
+        "vis BTR 12x50",
+        "vis tete fraisée BTR 5x20",
+        "dynamometre portée max 6t",
+        "dynamometre portée max 3,2t",
+        "fut de graisse MULTIS EP2",
+        "comparateur",
+        "palier UCP-205",
+        "raccord union droit de 12M-20",
+        "metre rond inox Ø12",
+        ];
+        $( ".ref" ).autocomplete({
         source: availableTags,
         appendTo: "#add-new"
         });
@@ -507,24 +416,6 @@
                     
                     <!-- Earnings (Monthly) Card Example -->                   
                         <div class="col-xl-3 col-md-6t">
-                            <a href="acueiladmin.php">
-                                <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Commandes (Piéces)</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbArticles;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                               </div>
-                            </a>
-                        </div>
-                        <div class="col-xl-3 col-md-6t">
                             <a href="<?php echo "acueiladmin2.php?id=$_GET[id]"; ?>">
                                 <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
                                     <div class="card-body">
@@ -543,107 +434,6 @@
                             </a>
                         </div>
                     <!-- Pending Requests Card Example -->
-                    <?php 
-                        if($_SESSION['niveau']=='mang' && $nbRege){
-                        ?>
-                        <div class="col-xl-3 col-md-6">
-                            <a href="rejet.php">
-                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                    Livraisons rejetées</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbRege;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div> 
-                    <?php
-                        }
-                    ?>
-                    
-                    <!-- Pending Requests Card Example -->
-                    <?php 
-                        if($_SESSION['niveau']=='admin' && $nbReclamation){
-                        ?>
-                            <div class="col-xl-3 col-md-6">
-                                <a href="reclamation.php">
-                                    <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
-                                        <div class="card-body">
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col mr-2">
-                                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                        Reclamations</div>
-                                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $nbReclamation;?></div>
-                                                </div>
-                                                <div class="col-auto">
-                                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> 
-                                </a>                
-                            </div>
-                         
-                    <?php
-                        }
-                    ?>   
-                    <?php 
-                        if($_SESSION['niveau']=='admin'){
-                            ?>    
-                        <div class="col-xl-3 col-md-6t">
-                            <a href="utilisateur.php">
-                                <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Utilisateurs (All)</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbutilisateur;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
-                    ?>
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <?php 
-                        if($_SESSION['niveau']=='kemc' && $nbartA){
-                    ?>
-                        <div class="col-xl-3 col-md-6">
-                            <a href="commandeAapprouver.php">
-                                <div class="card border-left-info shadow h-100 py-2 bg-warning bg-gradient" id="clignoter1">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">A approuver
-                                                </div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbartA;?></div>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php
-                        }
-                    ?>
                 </div>
 
                 <!-- Content Row -->
@@ -757,7 +547,7 @@
                                     <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
                                         <li class="nav-item">
                                             <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Commandes en cours de la <?php echo "DA00".$id; ?></span> 
+                                                <span class="fw-bold font-size-15">Demandes en cours de la <?php echo "DA00".$id; ?></span> 
                                             </a>
                                         </li>                              
                                     </ul>
@@ -774,7 +564,7 @@
                                                                 <h2 class="accordion-header" id="flush-headingOne">
                                                                     <button class="accordion-button fw-medium" type="button" data-bs-toggle="collapse"
                                                                         data-bs-target="#flush-collapseOne" aria-expanded="true" aria-controls="flush-collapseOne">
-                                                                        Liste des commandes en cours
+                                                                        Liste des demandes en cours
                                                                     </button>
                                                                 </h2>
                                                                 <div id="flush-collapseOne" class="accordion-collapse collapse show" aria-labelledby="flush-headingOne"
@@ -785,13 +575,9 @@
                                                                                 <thead class="table-light">
                                                                                     <tr>  
                                                                                         <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">References<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -799,6 +585,7 @@
                                                                                 </thead>
     
                                                                                 <tbody>
+                                                                                    <?php require_once 'fonctions.php'; ?>
                                                                                     <?php
                                                                                         $i=0;
                                                                                         foreach($articles as $article){
@@ -807,23 +594,9 @@
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
                                                                                         <td><?php echo "DA00".$article['idda']?></td>
-                                                                                        <td><?= $article['quantites'] ?></td>
-                                                                                        <td><?= $article['designations'] ?></td>
-                                                                                        <td><?= $article['references'] ?></td>
+                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
-                                                                                            <?php 
-                                                                                                if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
-                                                                                            ?>
-                                                                                                <td><i class="btn btn-danger" id="rejet"><?= $article['livraisonPart'] ?></i></td>   
-                                                                                            <?php
-                                                                                            }else{
-                                                                                            ?>
-                                                                                            <td><?= $article['livraison'] ?></td>                                                                                           
-                                                                                            <?php
-                                                                                            } ?>
-                                                                            
-                                                                                        <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
@@ -876,6 +649,7 @@
                                                                                             <?php
                                                                                             }
                                                                                             ?>
+                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
                                                                                                 <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0){
@@ -887,6 +661,23 @@
                                                                                             
                                                                                         </td> 
                                                                                     </tr>
+                                                                                    <!-- Modal pour afficher le fichier -->
+                                                                                    <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="fileModalLabel">Description du message</h5>
+                                                                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>  
+                                                                                                <h6 class="form-label fw-bold" for="nom" style="margin-left:25px; margin-top:10px;">Message :</h6>
+                                                                                                <div class="modal-body border border-warning" style="margin:70px; border-radius: 15px 30px; margin-top:20px; background-color: #fef1df;">
+                                                                                                    <h4><?php echo $article['description']; ?></h4>                                                                                                
+                                                                                                </div>                                                                                             
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
                                                                                      <!-- Modal pour afficher le fichier -->
                                                                                     <div class="modal fade" id="fileModal<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
                                                                                         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -964,7 +755,7 @@
                                                                                                                     ?>" name="userLivrer" id="example-date-input">
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                            <div class="col-md-6">
+                                                                                                            <div class="col-md-6 visually-hidden">
                                                                                                                 <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="livraison">Livraison</label>
                                                                                                                     <input class="form-control" type="text" value="" name="livraison" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
@@ -1007,11 +798,11 @@
                                                                                     <?php 
                                                                                     if($_SESSION['niveau']=='kemc'){
                                                                                     ?>
-                                                                                        <a data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter Commande</a>
+                                                                                        <a data-bs-toggle="modal" data-bs-target=".add-newDemande" class="btn bg-info w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter Demande</a>
                                                                                         <?php
                                                                                     } 
                                                                                     ?>
-                                                                                        <a href="acueilAdmin.php" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                        <a href="historiquePieces.php?id=<?php echo $_GET['id'];?>" class="btn btn-danger  w-lg"><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
                                                                                 </div>
                                                                                 
                                                                                 <div class="d-flex gap-2 pt-4">
@@ -1069,6 +860,12 @@
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="prenom" >Désignations</label>
                                                 <input class="form-control designa" type="text" name="designations" id="example"  placeholder="Taper la designation">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="reference" >Références</label>
+                                                <input class="form-control ref" type="text" value="" name="references" id="example-date-input3"  placeholder="Taper la reference">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -1178,6 +975,149 @@
                         </div><!-- /.modal-content -->
                     </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->
+
+                <div class="modal fade add-newDemande" id="add-newDemande" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Ajouter une commande</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="#" method="POST" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-6 text-start">
+                                                <label class="form-label fw-bold" for="nom">Description de la demande</label>
+                                                <textarea class="form-control" type="text" name="description" value="" id="example-date-input" rows="8" placeholder="Mettez la description ici"></textarea>
+                                            </div>
+                                        </div>
+                                        <!--<div class="col-md-6">
+                                            <div class="mb-6 text-start">
+                                                <label class="form-label fw-bold" for="nom">Quantités</label>
+                                                <input class="form-control" type="number" name="quantites" value="" id="example-date-input4" placeholder="Donner la quantité">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="prenom" >Désignations</label>
+                                                <input class="form-control designa" type="text" name="designations" id="example"  placeholder="Taper la designation">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="reference" >Références</label>
+                                                <input class="form-control ref" type="text" value="" name="references" id="example-date-input3"  placeholder="Taper la reference">
+                                            </div>
+                                        </div>!-->
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="priorites" >Priorités</label>
+                                                <select class="form-control" name="priorites" value="">
+                                                    <option>E-Planifié</option>
+                                                    <option>D-Dés que possible</option>
+                                                    <option>C-Normal</option>
+                                                    <option>B-Urgent</option>
+                                                    <option>A-Hyper-Urgent</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="priorites">Status</label>
+                                                <select class="form-control" name="status" value="Attente livraison">
+                                                    <option>Attente livraison</option>
+                                                    <option>Attente approbation</option>
+                                                    <option>livraison partielle</option>
+                                                    <option>Terminé</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="user" ></label>
+                                                <input class="form-control " type="text" value="<?php
+                                                    $array = explode(' ', $_SESSION['nomcomplet']);
+                                                    echo $array[0]; 
+                                                ?>" name="user" id="example-date-input2">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="idda" ></label>
+                                                <input class="form-control " type="text" value="<?php
+                                                    echo $id;
+                                                ?>" name="idda" id="example-date-input1">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="livraison">Livraison</label>
+                                                <input class="form-control" type="text" value="0" name="livraison" id="example-date-input" placeholder="Noter la livraison">
+                                            </div>
+                                        </div>   
+                                </div>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h6 class="text-start">Photo de la piéce</h6>
+                                            <div class="table-responsive">
+                                                    <table class="table table-nowrap align-middle">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th scope="col" class="text-start fw-bold">Type de pièce</th>
+                                                                <th scope="col" class="text-start fw-bold">Fichier à joindre</th>
+                                                                <th scope="col" class="text-start fw-bold">Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr class="text-start">
+                                                                <td>JPEG</td>
+                                                                <td>PHOTO</td>
+                                                                <td>
+                                                                    <ul class="list-inline mb-0">
+                                                                        <li class="list-inline-item">
+                                                                            <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                        </li>
+                                                                    </ul>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                <div class="col-md-12 text-start">
+                                                    <!--<label for="file-upload" class="btn btn-danger boutons-ajout me-1">Ajouter fichier</label>!-->
+                                                    <input name="file" type="file"  id="formFileDisabled" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12 text-end">
+                                            <div class="col-md-8 align-items-center col-md-12 text-end">
+                                                <?php if($mess == "error"){ ?> <script>    Swal.fire({
+                                                    text: 'Veiller remplir tous les champs svp!',
+                                                    icon: 'error',
+                                                    timer: 2000,
+                                                    showConfirmButton: false,
+                                                    });</script> <?php } ?>
+                                                <?php if(isset($_GET['mess']) && isset($_GET['id']) && $_GET['mess']=="success"){?> <script>    Swal.fire({
+                                                    text: 'Commande enregistrée avec succès merci!',
+                                                    icon: 'success',
+                                                    timer: 2000,
+                                                    showConfirmButton: false,
+                                                    });</script> <?php } ?>
+                                                <div class="d-flex gap-2 pt-4">                           
+                                                    <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                    <input class="btn btn-success  w-lg bouton" name="valideArticle" type="submit" value="Enregistrer">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>  
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+
                 </div> 
                 </div>
                 </div>                                  

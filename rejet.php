@@ -12,13 +12,15 @@
     // On se connecte à là base de données
     include 'connect.php';
 
+    $mess1="";
+
     if(isset($_POST['valideLivraison'])){
-        if(!empty($_POST['livraison'])){
+        if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){
             $status=htmlspecialchars($_POST['status']);
             $id=htmlspecialchars($_POST['id']);
             $user=htmlspecialchars($_POST['userLivrer']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $req ="UPDATE articles SET status=?, livraisonPart=?, actifmang=1, rege=0, userlivrer=? WHERE id=$id;"; 
+            $req ="UPDATE articles SET statuspart=?, livraisonPart=?, actifmang=1, rege=0, userlivrer=? WHERE id=$id;"; 
             //$db->query($req); 
             $reqtitre = $db->prepare($req);
             $reqtitre->execute(array($status,$livraison,$user));
@@ -28,7 +30,9 @@
                 header("location:acueilAdmin1.php?id=$id");
                 exit;
             }
-        }       
+        }elseif($_POST['livraison'] > ($_POST['quantites'])){
+            $mess1 = "error";
+          }       
     }
 
     // On détermine le nombre total d'articles
@@ -46,7 +50,7 @@
     $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0;";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `description`='0';";
     // On prépare la requête
     $query = $db->prepare($sql);
 
@@ -57,6 +61,19 @@
     $result = $query->fetch();
   
     $nbRege = (int) $result['nb_articles'];
+
+    // On détermine le nombre total de demande
+    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0';";
+    // On prépare la requête
+    $query8 = $db->prepare($sql8);
+
+    // On exécute
+    $query8->execute();
+    
+    // On récupère le nombre d'articles
+    $result8 = $query8->fetch();
+  
+    $nbRegeDemande = (int) $result8['nb_articles']; 
 
 
 
@@ -78,7 +95,7 @@
     if($_SESSION['niveau'] =='mang' || $_SESSION['niveau'] =='admin'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`=0 and `rege`=1;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `description`='0' and `rege`=1;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -101,7 +118,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `description`='0' and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -136,6 +153,17 @@
         <link href="css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
         <!-- Icons Css -->
         <link href="css/icons.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- Sweet Alert -->
+        <link href="./libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
+        <script src="./libs/sweetalert2/sweetalert2.min.js"></script>
+
+        
+        <!--  Jquery-ui -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
         <!-- App Css-->
         <link href="css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
         
@@ -205,7 +233,13 @@
                                                 <label class="form-label fw-bold" for="nom">Message</label>
                                                 <textarea class="form-control" placeholder="Taper votre réclamation destinée à l'administrateur svp!" name="message" id="example-date-input" rows="8"></textarea>
                                             </div>
-                                        </div>                                      
+                                        </div>  
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="user" >Nom de la DA</label>
+                                                <input class="form-control " type="text" value="" name="nomDA" id="example-date-input" placeholder="Donner le nom de la DA exp: DA0012">
+                                            </div>
+                                        </div>                                     
                                         <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="user" ></label>
@@ -220,7 +254,7 @@
                                         <div class="col-md-12 text-end">
                                             <div class="col-md-8 align-items-center col-md-12 text-end">
                                                 <div class="d-flex gap-2 pt-4">                           
-                                                    <a href="acueilKemC.php"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                    <a href=""><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
                                                     <input class="btn btn-success  w-lg bouton" name="valide" type="submit" value="Envoyer">
                                                 </div>
                                             </div>
@@ -236,17 +270,41 @@
         <!-- Content Row -->
                 <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
                     <?php 
-                        if(($_SESSION['niveau']=='mang' && $nbRege) || ($_SESSION['niveau']=='admin' && $nbRege)){
+                        if(($_SESSION['niveau']!='kemc')){
                         ?>
                         <div class="col-xl-3 col-md-6">
                             <a href="rejet.php">
-                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
+                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient">
                                     <div class="card-body">
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                     Livraisons rejetées</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbRege;?></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div> 
+                    <?php
+                        }
+                    ?>
+                    <?php 
+                        if(($_SESSION['niveau']!='kemc')){
+                        ?>
+                        <div class="col-xl-3 col-md-6">
+                            <a href="rejetDemande.php">
+                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Demandes rejetées</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbRegeDemande;?></div>
                                             </div>
                                             <div class="col-auto">
                                                 <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -458,6 +516,12 @@
                                                 <label class="form-label fw-bold" for="livraison">id</label>
                                                 <input class="form-control" type="text" value="<?= $article['id'] ?>" name="id" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                             </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="quantites">id</label>
+                                                <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                            </div>
                                         </div> 
                                         <div class="col-md-6">
                                             <div class="mb-3 text-start">
@@ -488,7 +552,18 @@
                                     <div class="row mt-2">
                                         <div class="col-md-12 text-end">
                                             <div class="col-md-8 align-items-center col-md-12 text-end">
-                                                <div class="d-flex gap-2 pt-4">                           
+                                                <div class="d-flex gap-2 pt-4"> 
+                                                    <?php if($mess1 == "error"){ ?> 
+                                                            <script>    
+                                                                Swal.fire({
+                                                                    text: 'La quantité à livrer est supérieure à la quantité demandée!',
+                                                                    icon: 'error',
+                                                                    timer: 3500,
+                                                                    showConfirmButton: false,
+                                                                });
+                                                            </script> 
+                                                        <?php } 
+                                                    ?>                          
                                                     <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
                                                     <input class="btn btn-success  w-lg bouton" name="valideLivraison" type="submit" value="Enregistrer">
                                                 </div>

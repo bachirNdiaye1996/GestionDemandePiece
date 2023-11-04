@@ -9,73 +9,208 @@
         $currentPage = 1;
     }
 
+    if($_SESSION['niveau'] == 'kemc'){
+        // On détermine le nombre total d'articles
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations` where `actif`=1 and `actifmang`=1;";
 
-    // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations` where `actif`=1;";
+        // On détermine le nombre total d'articles
+        $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
 
-    // On détermine le nombre total d'articles
-    $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
+        // On prépare la requête
+        $query1 = $db->prepare($sql1);
 
-    // On prépare la requête
-    $query1 = $db->prepare($sql1);
+        // On exécute
+        $query1->execute();
 
-    // On exécute
-    $query1->execute();
+        // On récupère le nombre d'articles
+        $result1 = $query1->fetch();
 
-    // On récupère le nombre d'articles
-    $result1 = $query1->fetch();
-
-    $nbutilisateur = (int) $result1['nb_utilisateur'];
+        $nbutilisateur = (int) $result1['nb_utilisateur'];
 
 
-    // On prépare la requête
-    $query = $db->prepare($sql);
+        // On prépare la requête
+        $query = $db->prepare($sql);
 
-    // On exécute
-    $query->execute();
+        // On exécute
+        $query->execute();
 
-    // On récupère le nombre d'articles
-    $result = $query->fetch();
+        // On récupère le nombre d'articles
+        $result = $query->fetch();
 
-    $nbReclamation = (int) $result['nb_articles'];
+        $nbReclamation = (int) $result['nb_articles'];
 
-    // On détermine le nombre d'articles par page
-    $parPage = 10;
+        // On détermine le nombre d'articles par page
+        $parPage = 10;
 
-    // On calcule le nombre de pages total
-    $pages = ceil($nbReclamation / $parPage);
+        // On calcule le nombre de pages total
+        $pages = ceil($nbReclamation / $parPage);
 
-    // Calcul du 1er article de la page
-    $premier = ($currentPage * $parPage) - $parPage;
+        // Calcul du 1er article de la page
+        $premier = ($currentPage * $parPage) - $parPage;
 
-    $sql = "SELECT * FROM `reclamations` where `actif`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `reclamations` where `actif`=1 and `actifmang`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
-    // On prépare la requête
-    $query = $db->prepare($sql);
+        // On prépare la requête
+        $query = $db->prepare($sql);
 
-    $query->bindValue(':premier', $premier, PDO::PARAM_INT);
-    $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
+        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
+        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
 
-    // On exécute
-    $query->execute();
+        // On exécute
+        $query->execute();
 
-    // On récupère les valeurs dans un tableau associatif
-    $reclamation = $query->fetchAll(PDO::FETCH_ASSOC);
+        // On récupère les valeurs dans un tableau associatif
+        $reclamation = $query->fetchAll(PDO::FETCH_ASSOC);
 
-    //--------------- Pour notre dasboard :--------------------
-    // On détermine le nombre total d'articles
-    $sql2 = "SELECT COUNT(*) AS nb_articles FROM `articles`;";
+        //--------------- Pour notre dasboard :--------------------
+        // On détermine le nombre total d'articles
+        $sql2 = "SELECT COUNT(*) AS nb_articles FROM `articles`;";
 
-    // On prépare la requête
-    $query2 = $db->prepare($sql2);
+        // On prépare la requête
+        $query2 = $db->prepare($sql2);
 
-    // On exécute
-    $query2->execute();
+        // On exécute
+        $query2->execute();
 
-    // On récupère le nombre d'articles
-    $result2 = $query2->fetch();
+        // On récupère le nombre d'articles
+        $result2 = $query2->fetch();
 
-    //$nbArticles = (int) $result2['nb_articles'];
+        //$nbArticles = (int) $result2['nb_articles'];
+    }elseif ($_SESSION['niveau'] == 'mang') {
+        // On détermine le nombre total d'articles
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations` where `actif`=1 and `actifkemb`=1;";
+
+        // On détermine le nombre total d'articles
+        $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
+
+        // On prépare la requête
+        $query1 = $db->prepare($sql1);
+
+        // On exécute
+        $query1->execute();
+
+        // On récupère le nombre d'articles
+        $result1 = $query1->fetch();
+
+        $nbutilisateur = (int) $result1['nb_utilisateur'];
+
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère le nombre d'articles
+        $result = $query->fetch();
+
+        $nbReclamation = (int) $result['nb_articles'];
+
+        // On détermine le nombre d'articles par page
+        $parPage = 10;
+
+        // On calcule le nombre de pages total
+        $pages = ceil($nbReclamation / $parPage);
+
+        // Calcul du 1er article de la page
+        $premier = ($currentPage * $parPage) - $parPage;
+
+        $sql = "SELECT * FROM `reclamations` where `actif`=1 and `actifkemb`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
+        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère les valeurs dans un tableau associatif
+        $reclamation = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        //--------------- Pour notre dasboard :--------------------
+        // On détermine le nombre total d'articles
+        $sql2 = "SELECT COUNT(*) AS nb_articles FROM `articles`;";
+
+        // On prépare la requête
+        $query2 = $db->prepare($sql2);
+
+        // On exécute
+        $query2->execute();
+
+        // On récupère le nombre d'articles
+        $result2 = $query2->fetch();
+
+        //$nbArticles = (int) $result2['nb_articles'];
+    }else{
+            // On détermine le nombre total d'articles
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `reclamations` where `actif`=1;";
+
+        // On détermine le nombre total d'articles
+        $sql1 = 'SELECT COUNT(*) AS nb_utilisateur FROM `utilisateur`;';
+
+        // On prépare la requête
+        $query1 = $db->prepare($sql1);
+
+        // On exécute
+        $query1->execute();
+
+        // On récupère le nombre d'articles
+        $result1 = $query1->fetch();
+
+        $nbutilisateur = (int) $result1['nb_utilisateur'];
+
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère le nombre d'articles
+        $result = $query->fetch();
+
+        $nbReclamation = (int) $result['nb_articles'];
+
+        // On détermine le nombre d'articles par page
+        $parPage = 10;
+
+        // On calcule le nombre de pages total
+        $pages = ceil($nbReclamation / $parPage);
+
+        // Calcul du 1er article de la page
+        $premier = ($currentPage * $parPage) - $parPage;
+
+        $sql = "SELECT * FROM `reclamations` where `actif`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        $query->bindValue(':premier', $premier, PDO::PARAM_INT);
+        $query->bindValue(':parpage', $parPage, PDO::PARAM_INT);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère les valeurs dans un tableau associatif
+        $reclamation = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        //--------------- Pour notre dasboard :--------------------
+        // On détermine le nombre total d'articles
+        $sql2 = "SELECT COUNT(*) AS nb_articles FROM `articles`;";
+
+        // On prépare la requête
+        $query2 = $db->prepare($sql2);
+
+        // On exécute
+        $query2->execute();
+
+        // On récupère le nombre d'articles
+        $result2 = $query2->fetch();
+
+        //$nbArticles = (int) $result2['nb_articles'];
+    }
 
 
 ?>
@@ -154,34 +289,12 @@
             </div>
         <!-- Content Row -->
         <div class="row header-item user text-start d-flex align-items-center w-75 p-3">
-                    
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6t">
-                        <a href="acueilAdmin.php">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Commandes (All)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbReclamation;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <!-- Pending Requests Card Example -->
                     <?php 
-                        if($_SESSION['niveau']=='admin' && $nbReclamation){
+                        if($nbReclamation){
                         ?>
                         <div class="col-xl-3 col-md-6">
                             <a href="reclamation.php">
-                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
+                                <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient">
                                     <div class="card-body">
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
@@ -199,25 +312,7 @@
                         </div> 
                     <?php
                         }
-                    ?>       
-                    <div class="col-xl-3 col-md-6t">
-                        <a href="utilisateur.php">
-                            <div class="card border-left-primary shadow h-100 py-2 bg-success bg-gradient">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Utilisateurs (All)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbutilisateur;?></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
+                    ?> 
                 </div>
 
                 <!-- Content Row -->
@@ -357,7 +452,8 @@
                                                                         <div class="table-responsive">
                                                                             <table class="table table-nowrap align-middle">
                                                                                 <thead class="table-light">
-                                                                                    <tr>                                                                                       
+                                                                                    <tr> 
+                                                                                        <th scope="col" class="fw-bold text-start">Nom de la DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                                      
                                                                                         <th scope="col" class="fw-bold text-start">Messages<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -374,11 +470,22 @@
                                                                                             //if($article['status'] == 'termine'){
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
+                                                                                        <td><?= $article['nomda'] ?></td>
                                                                                         <td><?php trunkString($article['message'], 20); ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
-                                                                                            <a href="<?php echo "deleteMessage.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Suprimer message" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                                            <?php 
+                                                                                                if($_SESSION['niveau'] == 'admin'){
+                                                                                                ?>
+                                                                                                    <a href="<?php echo "deleteMessage.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Suprimer message" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                                                <?php }if ($_SESSION['niveau'] == 'kemc') { ?>
+                                                                                                    <a href="<?php echo "deleteMessage.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Suprimer message" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                                            <?php }if ($_SESSION['niveau'] == 'mang'){ ?>
+                                                                                                    <a href="<?php echo "deleteMessage.php?id=$article[id]"?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Suprimer message" class="px-2 text-danger" data-bs-original-title="Supprimer" aria-label="Supprimer"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                                            <?php
+                                                                                            } 
+                                                                                            ?>
                                                                                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Message" class="px-2 text-primary" data-bs-original-title="Afficher Message" aria-label="Afficher Message"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                         </td> 
                                                                                     </tr>

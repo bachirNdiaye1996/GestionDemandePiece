@@ -9,7 +9,7 @@
         include "connexion.php";
         if((isset($_GET['idda']) && $_SESSION['niveau']=="kemc") || (isset($_GET['idda']) && $_SESSION['niveau']=="admin")){
             $id = $_GET['idda'];
-            $sql = "UPDATE `da` set `actif`=0 where id=$id";
+            $sql = "UPDATE `da` set `actif`=0, datelivraison=current_timestamp() where id=$id";
             $db->query($sql);
             header("location:acueilAdmin.php?id=$id");
             exit;
