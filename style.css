@@ -27,3 +27,9 @@
     50% { opacity:1; }
     100% { opacity:0; }
 }
+
+#dialog{ max-width: 90% !important; }
+
+.mat-spinner-color::ng-deep circle{
+    stroke: #00a651 !important;
+}

@@ -14,7 +14,8 @@ $namefile="";
 $error="";
 $success="";
 $idda="";
-$EstDemande=false;
+$EstDemande=0;
+//echo $EstDemande;
 
 if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
   if(!isset($_GET['id'])){
@@ -27,7 +28,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     $result = $db->query($sql);
     $row = $result->fetch();
     if($row['description'] != "0"){
-        $EstDemande = true;
+        $EstDemande = 1;
     }
     while(!$row){
       header("location: acueilAdmin.php");
@@ -35,10 +36,11 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     }
     $quantites=$row['quantites'];
     $description=$row['description'];
-    $designations=$row['designations'];
+    $designations="DESI :".$row['designations']."REFE :".$row['references'];
     $reference=$row['references'];
     $priorites=$row['priorites'];
     $namefile=$row['namefile'];
+    //echo $EstDemande;
 }else{    
     //-------Gestion fichier
                 $uploaddir = 'fichiers/';
@@ -54,7 +56,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     //-------Gestion fichier
     $namefile=htmlspecialchars($_FILES['file']['name']);
 
-    if(!$EstDemande && isset($_POST['valideArticle'])){
+    if(isset($_POST['valideArticle'])){
         $idda = $_GET['idda'];
         $id = $_GET['id'];
         $priorites=$_POST['priorites'];
@@ -72,7 +74,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         header("location: acueilAdmin1.php?id=$idda");
         exit; 
     }
-    if($EstDemande && isset($_POST['valideArticle'])){
+    if(isset($_POST['valideDemande'])){
         $idda = $_GET['idda'];
         $id = $_GET['id'];
         $description=htmlspecialchars($_POST['description']);
@@ -257,7 +259,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                                 <div class="col-md-8 align-items-center col-md-12 text-end">
                                                     <div class="d-flex gap-2 pt-4">                           
                                                         <a href="<?php if(!$EstDemande){echo "acueilAdmin1.php?id=$idda";}else{echo "acueilAdmin2.php?id=$idda";} ?>"><input class="btn btn-danger  w-lg bouton" value="Annuler"></a>
-                                                        <input class="btn btn-success  w-lg bouton" name="valideArticle" type="submit" value="Enregistrer">
+                                                        <input class="btn btn-success  w-lg bouton" name="<?php  if($EstDemande == 1){ echo "valideDemande";}else{ echo "valideArticle"; }?>" type="submit" value="Enregistrer">
                                                     </div>
                                                 </div>
                                             </div>

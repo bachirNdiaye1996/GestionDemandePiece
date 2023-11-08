@@ -182,7 +182,7 @@
                 <div class="dropdown d-inline-block">
                     <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown-v"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img class="rounded-circle header-profile-user" src="image/avatar-3.jpg"
+                        <img class="rounded-circle header-profile-user" src="image/avatar-3.png"
                         alt="Header Avatar">
                         <span class="d-none d-xl-inline-block ms-2 fw-medium font-size-15"><?php echo $_SESSION['nomcomplet'] ?></span>
                     </button>
@@ -369,7 +369,7 @@
                         <div class="card">
                             <div class="card-body p-0">
                                 <div class="user-profile-img">
-                                    <img src="image/avatar-3.jpg"
+                                    <img src="image/avatar-3.png"
                                     class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
                                     alt="">
                                     <div class="overlay-content rounded-top">
@@ -386,7 +386,7 @@
                                 <div class="p-4 pt-0">
                                 <div class="mt-n5 position-relative text-center border-bottom pb-3">
                                     <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.jpg" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
+                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
                                                 <div class="avatar-overlay">
                                                     <input type="file" id="avatar-input" style="display: none;">
                                                         <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
