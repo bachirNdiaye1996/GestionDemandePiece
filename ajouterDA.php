@@ -12,7 +12,7 @@
 
 <?php
 
-    session_start(); 
+    //session_start(); 
 
     #$servername = "mysql-boulangerie.alwaysdata.net";
     $username = "root";
@@ -27,7 +27,7 @@
     $insertUser->execute(array($user));
 
     //sleep(3);
-    //header('location:acueilAdmin.php');
+    header('location:acueilAdmin.php');
     //sleep(3);
     //exit;       
 ?>

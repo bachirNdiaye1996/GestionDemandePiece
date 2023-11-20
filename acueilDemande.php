@@ -3,6 +3,16 @@
     // On se connecte à là base de données
     include 'connexionReclamation.php';
 
+    if(!$_SESSION['niveau']){
+        echo "<div style='background-color: lightblue; width:700px; height:400px; margin-left:300px'>";
+        echo "<h1 style='color:red; text-align: center'>Error :</h1>";
+        echo "<h2 style='color:red; margin-left:10px'>Sessions expurées!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Assurez vous que les fenetres ne sont pas ouvertes plusieures fois!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://localhost/GestionDemandePiece'>Acceder ici.</a></h2>";
+        echo "</div>";
+        return 0;
+    }
+
     if(isset($_GET['page']) && !empty($_GET['page'])){
         $currentPage = (int) strip_tags($_GET['page']);
     }else{
@@ -16,7 +26,7 @@
 
     if($_SESSION['niveau']=='admin'){
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé'  and `description`='0';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0  and `references`='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -31,7 +41,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `description`!='' and `description`!='0';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -56,7 +66,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `description`!='0' and `description`!='' ORDER BY `idda` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0  and `references`='' ORDER BY `idda` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -277,7 +287,7 @@
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Demandes (En cours)</div>
+                                                Frais et services</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbDemande;?></div>
                                             </div>
                                             <div class="col-auto">
@@ -430,9 +440,12 @@
                                                                                 <thead class="table-light">
                                                                                     <tr>  
                                                                                         <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -440,7 +453,6 @@
                                                                                 </thead>
     
                                                                                 <tbody>
-                                                                                    <?php require_once 'fonctions.php'; ?>
                                                                                     <?php
                                                                                         $i=0;
                                                                                         foreach($articles as $article){
@@ -449,9 +461,22 @@
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
                                                                                         <td><?php echo "DA00".$article['idda']?></td>
-                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
+                                                                                        <td><?= $article['quantites'] ?></td>
+                                                                                        <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                            <?php 
+                                                                                                if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
+                                                                                            ?>
+                                                                                                <td><i class="btn btn-danger" id="rejet"><?= $article['livraisonPart'] ?></i></td>   
+                                                                                            <?php
+                                                                                            }else{
+                                                                                            ?>
+                                                                                            <td><?= $article['livraison'] ?></td>                                                                                           
+                                                                                            <?php
+                                                                                            } ?>
+                                                                            
+                                                                                        <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
@@ -504,7 +529,6 @@
                                                                                             <?php
                                                                                             }
                                                                                             ?>
-                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
                                                                                                 <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0){

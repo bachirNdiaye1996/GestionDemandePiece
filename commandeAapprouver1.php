@@ -461,9 +461,11 @@
                                                                                 <thead class="table-light">
                                                                                     <tr>                  
                                                                                         <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -480,9 +482,11 @@
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
                                                                                         <td><?php echo "DA00".$article['idda']; ?></td>
-                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
+                                                                                        <td><?= $article['quantites'] ?></td>
+                                                                                        <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
                                                                                         <td><span class="<?php if($article['statuspart'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['statuspart'] ?></span></td>
+                                                                                        <td><?= $article['livraisonPart'] ?></td>
                                                                                         <td><?= $article['userLivrer'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
@@ -491,19 +495,21 @@
                                                                                             ?>
                                                                                             <input type="hidden" class="idr" value="<?php echo $article['id']?>">
                                                                                             <input type="hidden" class="idreg" value="<?php echo $article['id']?>">
+                                                                                            <input type="hidden" class="idda" value="<?php echo $article['idda']?>">
+                                                                                            <input type="hidden" id="iddda" value="<?php echo $article['idda']?>">
                                                                                             <input type="hidden" class="quantites" value="<?php echo $article['quantites']?>">
                                                                                             <input type="hidden" class="statuspart" value="<?php echo $article['statuspart']?>">
                                                                                             <input type="hidden" class="livraisonPart" value="<?php echo $article['livraisonPart']?>">
                                                                                             <a href="javascript:void(0);" id="approuverCommande<?php echo $i; ?>" class="btn btn-success"><ion-icon name="arrow-undo-outline"></ion-icon>Accepter</a>
                                                                                             <a href="javascript:void(0);" id="rejeterCommande<?php echo $i; ?>" class="btn btn-danger "><ion-icon name="arrow-undo-outline"></ion-icon>Rejeter</a>
-                                                                                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
                                                                                             <script>
                                                                                                     $(document).ready( function(){
                                                                                                         $('#approuverCommande<?php echo $i; ?>').click(function(e) {
                                                                                                             var idr = $(this).closest("tr").find(".idr").val();
-                                                                                                            //var quantites = $(this).closest("tr").find(".quantites").val();
+                                                                                                            var idda = $(this).closest("tr").find(".idda").val();
+                                                                                                            var quantites = $(this).closest("tr").find(".quantites").val();
                                                                                                             var stat = $(this).closest("tr").find(".statuspart").val();
-                                                                                                            //var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
+                                                                                                            var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
                                                                                                             e.preventDefault();
                                                                                                             Swal.fire({
                                                                                                             title: 'En es-tu sure?',
@@ -517,7 +523,7 @@
                                                                                                                 if (result.isConfirmed) {                                                                                                                  
                                                                                                                     $.ajax({
                                                                                                                             type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&status='+stat,
+                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart+'&status='+stat+'&idda='+idda,
                                                                                                                             //data: str,
                                                                                                                             success: function( response ) {
                                                                                                                                 //console.log(url);
@@ -543,6 +549,7 @@
                                                                                                     $(document).ready( function(){
                                                                                                         $('#rejeterCommande<?php echo $i; ?>').click(function(e) {
                                                                                                             var id = $(this).closest("tr").find(".idr").val();
+                                                                                                            var idda = $(this).closest("tr").find("#iddda").val();
                                                                                                             e.preventDefault();
                                                                                                             Swal.fire({
                                                                                                             title: 'En es-tu sure?',
@@ -556,9 +563,11 @@
                                                                                                                 if (result.isConfirmed) {                                                                                                                  
                                                                                                                     $.ajax({
                                                                                                                             type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idreg='+id,
+                                                                                                                            url: 'deleteAdmin.php?idreg='+id+'&idda='+idda,
                                                                                                                             //data: str,
                                                                                                                             success: function( response ) {
+                                                                                                                                //console.log(url);
+
                                                                                                                                 Swal.fire({
                                                                                                                                     text: 'livraison rejetée avec success!',
                                                                                                                                     icon: 'success',
@@ -697,7 +706,7 @@
                                         </div>
                                         <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
-                                                <label class="form-label fw-bold" for="idda" ></label>
+                                                <label class="form-label fw-bold" for="ida" ></label>
                                                 <input class="form-control " type="text" value="<?php
                                                     echo $id;
                                                 ?>" name="idda" id="example-date-input">

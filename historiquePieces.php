@@ -218,7 +218,7 @@
                         </div>
 
                         <?php 
-                    if($_SESSION['niveau']=='admin' && $nbDemande){
+                    if($_SESSION['niveau']=='admin' || $_SESSION['niveau']=='kemc'){
                         ?>
                     <div class="col-xl-3 col-md-6t">
                         <a href="historiqueDemandes.php?id=<?php echo $_GET['id'];?>">
@@ -227,8 +227,8 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Demandes (En cours)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nbre (Demandes) : <?php echo $nbDemande;?></div>
+                                            Frais et services</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbDemande;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>

@@ -3,6 +3,16 @@
 // On se connecte à là base de données
 include 'connexionReclamation.php';
 
+if(!$_SESSION['niveau']){
+    echo "<div style='background-color: lightblue; width:700px; height:400px; margin-left:300px'>";
+    echo "<h1 style='color:red; text-align: center'>Error :</h1>";
+    echo "<h2 style='color:red; margin-left:10px'>Sessions expurées!</h2>";
+    echo "<h2 style='color:red; margin-left:10px'>Assurez vous que les fenetres ne sont pas ouvertes plusieures fois!</h2>";
+    echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://localhost/GestionDemandePiece'>Acceder ici.</a></h2>";
+    echo "</div>";
+    return 0;
+}
+
 
 if(isset($_GET['page']) && !empty($_GET['page'])){
     $currentPage = (int) strip_tags($_GET['page']);
@@ -12,6 +22,8 @@ if(isset($_GET['page']) && !empty($_GET['page'])){
 
 // On se connecte à là base de données
 include 'connect.php';
+include 'mail.php';
+
 
 //Pour tous les articles
 
@@ -30,6 +42,42 @@ include 'connect.php';
     
 
 // Fin tous les articles
+
+//Pour inserer une DA avec mail de notification 
+if(isset($_POST['valideDAEmail'])){
+    include 'ajouterDA.php';
+    if(!empty($_POST['email']) || !empty($_POST['email1'])){   
+        $email=$_POST['email'];
+        $email1=$_POST['email1'];                    
+        //$messageD=$_SESSION['nomcomplet'].' vient de creer une nouvelle DA de demande de piece.';
+        $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de creer une nouvelle DA de demande de piece.</p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+        envoie_mail($_SESSION['nomcomplet'],$email,'nouvelle DA',$messageD);
+        //foreach($articlMails as $article){
+            if(!empty($_POST['email1'])){
+                envoie_mail($_SESSION['nomcomplet'],$email1,'Nouvelle DA',$messageD);
+            }
+        //}
+    }
+}
 
 
 // On détermine le nombre total d'articles
@@ -266,7 +314,7 @@ if($_SESSION['niveau']=="kemc"){
     $articles = $query->fetchAll(PDO::FETCH_ASSOC);
 }elseif($_SESSION['niveau']=="admin"){
     // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0 and `description`='0';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0 and `references`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -289,7 +337,7 @@ if($_SESSION['niveau']=="kemc"){
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `quantites`>=0 and `actif`=1 and `status`!='Terminé' and `description`='0' ORDER BY `idda` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `quantites`>=0 and `actif`=1 and `status`!='Terminé' and `references`!='' ORDER BY `idda` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -306,8 +354,6 @@ if($_SESSION['niveau']=="kemc"){
     //Pour les demandes
 
 }
-
-
 
 
 
@@ -338,7 +384,7 @@ $resultartA1 = $queryartA1->fetch();
 $nbartADemande = (int) $resultartA1['nb_articles'];
 
 // ----------- On definie le nombre de demande
-$sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `description`!='0';";
+$sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0  and `references`='';";
         
 // On prépare la requête
 $queryd = $db->prepare($sqld);
@@ -415,7 +461,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item d-flex align-items-center" href="utilisateur.php"><i class="mdi mdi mdi-account text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Gestion des utilisateurs</span></a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
+                        <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi  text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                     </div>
@@ -436,7 +482,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                         <?php 
                         if($_SESSION['niveau']=='kemc'){
                         ?>
-                        <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
+                        <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
                         <div class="dropdown-divider"></div>
                         <?php 
                             }
@@ -556,8 +602,8 @@ $nbADemande = (int) $resultd['nb_articles'];
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Demandes (En cours)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nbre (Demandes) : <?php echo $nbADemande;?></div>
+                                                Frais et services</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbADemande;?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -794,13 +840,15 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                                         <table class="table table-nowrap align-middle">
                                                                             <thead class="table-light">
                                                                                 <tr>                                                                                       
-                                                                                    <th scope="col" class="fw-bold text-start">Nom de la D.A<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <th scope="col" class="fw-bold text-start">Nom<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <th scope="col" class="fw-bold text-start">Option<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     <?php 
                                                                                             if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
                                                                                         ?>
-                                                                                            <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                            <!--<th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>!-->
                                                                                         <?php
                                                                                         }
                                                                                         ?>
@@ -809,12 +857,23 @@ $nbADemande = (int) $resultd['nb_articles'];
 
                                                                             <tbody>
                                                                                 <?php
+                                                                                    $stat=0;
                                                                                     foreach($articles as $article){
                                                                                         //if($article['status'] == 'termine'){
                                                                                 ?>                                                                              
                                                                                 <tr class="text-start">
                                                                                     <td class=".bg-light"><a href="<?php echo "acueilAdmin1.php?id=$article[id]"?>" class="btn  w-lg bouton" data-toggle="tooltip" data-placement="top" title="Ouvrir la DA"><i class="bx me-2"></i><?php echo "DA00".$article['id']; ?></a></td>
                                                                                     <td><?= $article['user'] ?></td>
+                                                                                    <td>
+                                                                                        <span class="<?php 
+                                                                                        if($article['statuspartielle'] > $article['statustermine'] && $article['statuspartielle'] > $article['statusattente'] ){$stat=1; echo "badge badge-soft-warning mb-0";}
+                                                                                        elseif($article['statustermine'] == 0 && $article['statuspartielle'] == 0){$stat=2; echo "badge badge-soft-success  mb-0";}
+                                                                                        elseif($article['statusattente'] == $article['statustermine'] && $article['statusattente'] == $article['statuspartielle']){$stat=2; echo "badge badge-soft-success  mb-0";}
+                                                                                        elseif($article['statustermine'] > $article['statusattente'] && $article['statustermine'] > $article['statuspartielle']){$stat=3; echo "badge badge-soft-danger  mb-0";}
+                                                                                        else{$stat=1; echo "badge badge-soft-warning mb-0";}?>">
+                                                                                        <?php if($stat == 1){echo "Livraison partielle";}elseif($stat == 2){echo "Attente livraison";}elseif($stat == 3){echo "Livraison terminée";} ?>
+                                                                                        </span>
+                                                                                    </td>
                                                                                     <td><?= $article['datecreation'] ?></td>
                                                                                     <td>
                                                                                         <?php 
@@ -825,7 +884,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                                                                 }
                                                                                             ?> 
                                                                                             <input type="hidden" class="idda" value="<?php echo $article['id']?>">
-                                                                                            <a href="javascript:void(0);" class="suprimerDA btn btn-danger"><i class=""></i>Terminer DA</a>
+                                                                                            <a href="javascript:void(0);" class="suprimerDA btn btn-danger"><i class=""></i>Suprimer DA</a>
                                                                                             <!-- <a href="javascript:void(0);<?php echo "deleteDa.php?idda=$article[id]"?>" data-bs-placement="top" title="Suprimer DA" class="px-2 text-danger suprimerDA" data-bs-original-title="Supprimer DA " aria-label="Supprimer DA"><i class="bx bx-trash-alt font-size-18"></i></a> !-->
                                                                                             <script>
                                                                                                 $(document).ready( function(){
@@ -883,7 +942,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                                             ?>
                                                                                 <div class="col-md-8 align-items-center">
                                                                                     <div class="d-flex gap-2 pt-4">
-                                                                                    <a href="javascript:void(0);" class="newDA btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i>Créer une nouvelle DA</a>
+                                                                                    <a data-bs-toggle="modal" data-bs-target=".add-new"  class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i>Créer une nouvelle DA</a>
                                                                                     </div>
                                                                                 </div>
                                                                                 <script>
@@ -942,6 +1001,46 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                         </div> 
                                                     </div><!-- end accordion -->
                                                     <!--End !-->
+
+
+                    <div class="modal fade add-new" id="add-new" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="myExtraLargeModalLabel">Ajouter un email</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="#" method="POST" enctype="multipart/form-data">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-6 text-start">
+                                                <label class="form-label fw-bold" for="email">Email</label>
+                                                <input class="form-control" type="email" name="email" value="" id="example-date-input4" placeholder="Renseigner un email">
+                                            </div>
+                                        </div> 
+                                        <div class="col-md-6">
+                                            <div class="mb-6 text-start">
+                                                <label class="form-label fw-bold" for="email1">Email 1</label>
+                                                <input class="form-control" type="email" name="email1" value="" id="example-date-input4" placeholder="Renseigner un autre email">
+                                            </div>
+                                        </div>  
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12 text-end">
+                                            <div class="col-md-8 align-items-center col-md-12 text-end">
+                                                <div class="d-flex gap-2 pt-4">                           
+                                                    <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                    <input class="btn btn-success  w-lg bouton" name="valideDAEmail" type="submit" value="Enregistrer">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>  
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
                                        </div>
                                     </div>
                                 </div>
@@ -1002,7 +1101,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['references'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                        <td><span class="<?php if($article['status'] == "livraison partielle" || $article['status'] == "Attente approbation"){echo "badge badge-soft-success mb-0";}elseif($article['status'] == "Attente livraison"){echo "badge badge-soft-warning  mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
                                                                                             ?>

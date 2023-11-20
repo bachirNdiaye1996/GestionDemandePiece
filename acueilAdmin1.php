@@ -3,6 +3,16 @@
     // On se connecte à là base de données
     include 'connexionReclamation.php';
 
+    if(!$_SESSION['niveau']){
+        echo "<div style='background-color: lightblue; width:700px; height:400px; margin-left:300px'>";
+        echo "<h1 style='color:red; text-align: center'>Error :</h1>";
+        echo "<h2 style='color:red; margin-left:10px'>Sessions expurées!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Assurez vous que les fenetres ne sont pas ouvertes plusieures fois!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://localhost/GestionDemandePiece'>Acceder ici.</a></h2>";
+        echo "</div>";
+        return 0;
+    }
+
     if(isset($_GET['page']) && !empty($_GET['page'])){
         $currentPage = (int) strip_tags($_GET['page']);
     }else{
@@ -11,22 +21,58 @@
 
     // On se connecte à là base de données
     include 'connect.php';
+    include 'mail.php';
 
     $mess="";
     $mess1="";
 
+    //echo 'test';
+
 
     if(isset($_POST['valideLivraison'])){
-        if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){
-          echo $_POST['quantites'];
-            $status=htmlspecialchars($_POST['status']);
+        if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){                       
+            $status="";
+          //echo $_POST['quantites'];
+            if($_POST['livraison'] < $_POST['quantites']){
+                $status="livraison partielle";
+            }elseif($_POST['livraison'] == $_POST['quantites']){
+                $status="Terminé";
+            }
             $id=htmlspecialchars($_POST['id']);
             $user=htmlspecialchars($_POST['userLivrer']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $req ="UPDATE articles SET statuspart=?, livraisonPart=?, actifmang=1, userlivrer=? WHERE id=$id;"; 
+            $req ="UPDATE articles SET statuspart=?,livraisonPart=?, actifmang=1, userlivrer=? WHERE id=$id;"; 
             //$db->query($req); 
             $reqtitre = $db->prepare($req);
             $reqtitre->execute(array($status,$livraison,$user));
+
+            //$messageD=$_SESSION['nomcomplet'].' vient de faire une livraison de piéces pour la DA00'.$_POST['idda'].' Veillez verifier svp! '.'<a href="http://localhost/GestionDemandePiece">Acceder ici.</a>';
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de faire une livraison de piéces pour la DA00$_POST[idda].</p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if(($article['niveau'] == 'kemc') || ($article['niveau'] == 'admin')){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle livraison',$messageD);
+                }
+            }
             
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
@@ -40,6 +86,8 @@
 
     if(isset($_POST['valideArticle'])){
         if(!empty($_POST['description']) && !empty($_POST['priorites'])){
+            //print_r('test');
+
             //-------Gestion fichier
                 $uploaddir = 'fichiers/';
                 $uploadfile = $uploaddir . basename($_FILES['file']['name']);
@@ -64,6 +112,7 @@
             $livraison=htmlspecialchars($_POST['livraison']);
             $insertUser=$db->prepare("INSERT INTO `articles` (`id`, `description`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`) VALUES (NULL, ?, ?, ?, current_timestamp(),?,?,?,?);')");
             $insertUser->execute(array($description,$priorites,$status,$livraison,$user,$idda,$namefile));
+
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
                 header("location:acueilAdmin1.php?id=$id&mess=success");
@@ -74,7 +123,28 @@
           $mess = "error";
         } 
 
-        if(!empty($_POST['quantites']) && !empty($_POST['designations']) && !empty($_POST['priorites'])){
+        if(!empty($_POST['quantites']) && !empty($_POST['designations']) && !empty($_POST['priorites'])){  
+            $idd=$_GET['id'];
+            
+            /*//Compter le nombre de en attente et l'incrementer
+            
+            $sql = "SELECT statusattente FROM `da` where id=$idd;";
+        
+            // On prépare la requête
+            $query = $db->prepare($sql);
+    
+            // On exécute
+            $query->execute();
+    
+            // On récupère le nombre d'articles
+            $result = $query->fetch();
+    
+            $nbEnAttente = (int) $result['statusattente'] + 1;*/
+
+            $insertUser=$db->prepare("UPDATE da SET  statusattente = statusattente + 1 where id=?");
+            //$reqtitre = $db->prepare($sql);
+            $insertUser->execute(array($idd));
+
             //-------Gestion fichier
                 $uploaddir = 'fichiers/';
                 $uploadfile = $uploaddir . basename($_FILES['file']['name']);
@@ -91,6 +161,7 @@
             $namefile=htmlspecialchars($_FILES['file']['name']);
             $quantites=htmlspecialchars($_POST['quantites']);
             $designations1=htmlspecialchars($_POST['designations']);
+            $dateplanifie=htmlspecialchars($_POST['dateplanifie']);
             //$references1=htmlspecialchars($_POST['references']);
             $priorites=htmlspecialchars($_POST['priorites']);
             $status=htmlspecialchars($_POST['status']);
@@ -101,8 +172,37 @@
             $references=$Chaine[1];
             $designations2=explode("DESI :",$Chaine[0],2);
             $designations=$designations2[1];
-            $insertUser=$db->prepare("INSERT INTO `articles` (`id`, `quantites`, `designations`, `references`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`) VALUES (NULL, ?, ?, ?, ?, ?, current_timestamp(),?,?,?,?);')");
-            $insertUser->execute(array($quantites,$designations,$references,$priorites,$status,$livraison,$user,$idda,$namefile));
+            $insertUser=$db->prepare("INSERT INTO `articles` (`id`, `quantites`, `designations`, `references`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`,`dateplanifie`) VALUES (NULL, ?, ?, ?, ?, ?, current_timestamp(),?,?,?,?,?);')");
+            $insertUser->execute(array($quantites,$designations,$references,$priorites,$status,$livraison,$user,$idda,$namefile,$dateplanifie));
+            
+            //$messageD=$_SESSION['nomcomplet'].' vient de créer une nouvelle commande de pieces dans la DA00'.$idda."."."Merci! <a href='http://localhost/GestionDemandePiece'>Acceder ici.</a> ";
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center' style='margin-top: 25px;'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de créer une nouvelle commande de pieces dans la DA00$_POST[idda].</p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if($article['niveau'] != 'kemc'){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle demande',$messageD);
+                }
+            }
+            
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
                 header("location:acueilAdmin1.php?id=$id&mess=success");
@@ -129,7 +229,7 @@
     $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `description`!=NULL and `actifkemb`=0;";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0;";
     // On prépare la requête
     $query = $db->prepare($sql);
 
@@ -165,7 +265,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `idda`=$id and `description`='0';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `idda`=$id and `references`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -180,7 +280,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `description`!='0' and `description`!='';";        
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `quantites`>=0  and `references`='';";
         // On prépare la requête
         $queryd = $db->prepare($sqld);
 
@@ -204,7 +304,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `description`='0' and `idda`= '$id' and `quantites`>=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`= '$id' and `quantites`>=0 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -221,7 +321,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `quantites`>0 and `idda`=$id and `actifmang`=0 and `actifkemb`=0;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`=$id and `actifmang`=0 and `actifkemb`=0 and `references`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -235,7 +335,7 @@
         $nbArticles = (int) $result['nb_articles'];
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `description`!='0';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `quantites`>0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -260,7 +360,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `quantites`>0 and `idda`= '$id' and `actifmang`=0 and `actifkemb`=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`= '$id' and `actifmang`=0 and `actifkemb`=0 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -278,7 +378,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `idda`=$id;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `references`!='' and `idda`=$id;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -292,7 +392,7 @@
         $nbArticles = (int) $result['nb_articles'];
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `description`!='0';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `quantites`>0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -317,7 +417,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`= '$id' and `actifkemb`= 0 and `quantites`>=0 and `actif`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`= '$id' and `actifkemb`= 0 and `quantites`>=0 and `actif`=1 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -394,7 +494,6 @@
     <script>
         //console.log($ProduitRef);
     $( function() {
-        
         var availableTags = <?php echo json_encode($_SESSION['ProduitDesign']); ?>;
         console.log(availableTags);
         $( ".designa" ).autocomplete({
@@ -531,7 +630,7 @@
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                    Demandes (En cours)</div>
+                                                Frais et services</div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo $nbDemande;?></div>
                                             </div>
                                             <div class="col-auto">
@@ -793,6 +892,7 @@
                                                                                         <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date planification<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
@@ -811,7 +911,7 @@
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['references'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                        <td><span class="<?php if($article['status'] == "livraison partielle"){echo "badge badge-soft-success mb-0";}elseif($article['status'] == "Attente livraison"){echo "badge badge-soft-warning mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
                                                                                             ?>
@@ -825,12 +925,23 @@
                                                                             
                                                                                         <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
+                                                                                        <td>
+                                                                                            <?php if($article['dateplanifie'] != ''){echo $article['dateplanifie'];}else{?>
+                                                                                                    <span class="badge badge-soft-success mb-0">Pas planifiée</span>
+                                                                                            <?php }?>
+                                                                                        </td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
                                                                                         <?php 
                                                                                                 if($_SESSION['niveau']=='kemc'){
                                                                                             ?>
-                                                                                                <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]"?>" data-bs-placement="top" title="Modifier commande" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                                                <?php 
+                                                                                                    if($article['status'] !='Terminé'){
+                                                                                                ?>
+                                                                                                    <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]"?>" data-bs-placement="top" title="Modifier commande" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                                                <?php 
+                                                                                                    }
+                                                                                                ?>
                                                                                                 <input type="hidden" class="id" value="<?php echo $article['id']?>">
                                                                                                 <input type="hidden" class="idda" value="<?php echo $article['idda']?>">
                                                                                                 <a href="javascript:void(0);" data-bs-placement="top" title="Suprimer la commande" class="suprimerCommande px-2 text-danger" data-bs-original-title="Suprimer la commande" aria-label="Suprimer la commande"><i class="bx bx-trash-alt font-size-18"></i></a>
@@ -941,18 +1052,14 @@
                                                                                                             </div> 
                                                                                                             <div class="col-md-6 visually-hidden">
                                                                                                                 <div class="mb-3 text-start">
+                                                                                                                    <label class="form-label fw-bold" for="livraison">id</label>
+                                                                                                                    <input class="form-control" type="text" value="<?= $article['idda'] ?>" name="idda" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                                                                                                </div>
+                                                                                                            </div> 
+                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                                <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="quantites">id</label>
                                                                                                                     <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
-                                                                                                                </div>
-                                                                                                            </div>
-                                                                                                            <div class="col-md-6">
-                                                                                                                <div class="mb-3 text-start">
-                                                                                                                    <label class="form-label fw-bold" for="priorites">Status</label>
-                                                                                                                    <select class="form-control" name="status" value="Attente livraison">
-                                                                                                                        <option>Attente approbation</option>
-                                                                                                                        <option>livraison partielle</option>
-                                                                                                                        <option>Terminé</option>
-                                                                                                                    </select>
                                                                                                                 </div>
                                                                                                             </div>
                                                                                                             <div class="col-md-6 visually-hidden">
@@ -1022,7 +1129,7 @@
                                                                                     <div class="float-sm-end">
                                                                                         <ul class="pagination mb-sm-0">
                                                                                             <li class="page-item <?= ($currentPage == 1) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
                                                                                             </li>
                                                                                             <?php for($page = 1; $page <= $pages; $page++): ?>
                                                                                             <!-- Lien vers chacune des pages (activé si on se trouve sur la page correspondante) -->
@@ -1032,7 +1139,7 @@
                                                                                             <?php endfor ?>
                                                                                             <!-- Lien vers la page suivante (désactivé si on se trouve sur la dernière page) -->
                                                                                             <li class="page-item <?= ($currentPage == $pages) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
                                                                                             </li>
                                                                                         </ul>
                                                                                     </div>
@@ -1081,6 +1188,12 @@
                                                     <option>B-Urgent</option>
                                                     <option>A-Hyper-Urgent</option>
                                                 </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="planifie" >Date planifiée</label>
+                                                <input class="form-control planifie" type="date" name="dateplanifie" id="example">
                                             </div>
                                         </div>
                                         <div class="col-md-6 visually-hidden">

@@ -23,7 +23,7 @@
                     $_SESSION['ProduitRef']=[];
                     $_SESSION['ProduitDesign']=[];
 
-                    $serverName = "SERVINTERAL\SQL2012";
+                   $serverName = "SERVINTERAL\SQL2012";
                     $connectionOptions = array("Database"=>"INTERAL",
                         "Uid"=>"mbachir", "PWD"=>"ndiabass19");
                     $conn = sqlsrv_connect($serverName, $connectionOptions);
@@ -38,7 +38,7 @@
                     try
                     {
                         //$conn = OpenConnection();
-                        $tsql = "SELECT * FROM INTERAL.dbo.PART_PART_V";
+                        $tsql = "SELECT * FROM INTERAL.dbo.PART_PART_V where F_ACTIVE != 0";
                         $getProducts = sqlsrv_query($conn, $tsql);
                         if ($getProducts == FALSE)
                             die(FormatErrors(sqlsrv_errors()));

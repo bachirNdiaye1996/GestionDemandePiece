@@ -16,14 +16,14 @@
 
     if(isset($_POST['valideLivraison'])){
         if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){
-            $status=htmlspecialchars($_POST['status']);
+            //$status=htmlspecialchars($_POST['status']);
             $id=htmlspecialchars($_POST['id']);
             $user=htmlspecialchars($_POST['userLivrer']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $req ="UPDATE articles SET statuspart=?, livraisonPart=?, actifmang=1, rege=0, userlivrer=? WHERE id=$id;"; 
+            $req ="UPDATE articles SET livraisonPart=?, actifmang=1, rege=0, userlivrer=? WHERE id=$id;"; 
             //$db->query($req); 
             $reqtitre = $db->prepare($req);
-            $reqtitre->execute(array($status,$livraison,$user));
+            $reqtitre->execute(array($livraison,$user));
             
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
@@ -50,7 +50,7 @@
     $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `description`='0';";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `references`!='';";
     // On prépare la requête
     $query = $db->prepare($sql);
 
@@ -63,7 +63,7 @@
     $nbRege = (int) $result['nb_articles'];
 
     // On détermine le nombre total de demande
-    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0';";
+    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `references`='';";
     // On prépare la requête
     $query8 = $db->prepare($sql8);
 
@@ -95,7 +95,7 @@
     if($_SESSION['niveau'] =='mang' || $_SESSION['niveau'] =='admin'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `description`='0' and `rege`=1;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `references`!='' and `rege`=1;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -118,7 +118,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `description`='0' and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `references`!='' and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -523,16 +523,6 @@
                                                 <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                             </div>
                                         </div> 
-                                        <div class="col-md-6">
-                                            <div class="mb-3 text-start">
-                                                <label class="form-label fw-bold" for="priorites">Status</label>
-                                                <select class="form-control" name="status" value="Attente livraison">
-                                                    <option>Attente approbation</option>
-                                                    <option>livraison partielle</option>
-                                                    <option>Terminé</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="user" ></label>

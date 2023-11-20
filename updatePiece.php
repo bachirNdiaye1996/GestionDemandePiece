@@ -27,16 +27,18 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     $sql = "select * from articles where id=$id";
     $result = $db->query($sql);
     $row = $result->fetch();
-    if($row['description'] != "0"){
+    if($row['references'] == ""){
         $EstDemande = 1;
+        $designations=$row['designations'];
+    }else{
+        $designations="DESI :".$row['designations']."REFE :".$row['references'];
     }
     while(!$row){
       header("location: acueilAdmin.php");
       exit;
     }
     $quantites=$row['quantites'];
-    $description=$row['description'];
-    $designations="DESI :".$row['designations']."REFE :".$row['references'];
+    //$description=$row['description'];
     $reference=$row['references'];
     $priorites=$row['priorites'];
     $namefile=$row['namefile'];
@@ -60,6 +62,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $idda = $_GET['idda'];
         $id = $_GET['id'];
         $priorites=$_POST['priorites'];
+        $dateplanifie=($_POST['dateplanifie']);
         $quantites=$_POST['quantites'];
         $designations1=$_POST['designations'];
         //$reference=$_POST['references'];
@@ -67,23 +70,26 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $reference=$Chaine[1];
         $designations2=explode("DESI :",$Chaine[0],2);
         $designations=$designations2[1];
-        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites', `namefile`='$namefile' where id=$id;";
+        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile' where id=$id;";
         //$result = $db->query($sql); 
         $sth = $db->prepare($sql);    
-        $sth->execute(); 
+        $sth->execute(array($dateplanifie));
+         
         header("location: acueilAdmin1.php?id=$idda");
         exit; 
     }
     if(isset($_POST['valideDemande'])){
         $idda = $_GET['idda'];
         $id = $_GET['id'];
-        $description=htmlspecialchars($_POST['description']);
+        $dateplanifie=($_POST['dateplanifie']);
         $priorites=$_POST['priorites'];
-        //echo $description;
-        $sql = "UPDATE `articles` SET `description`=?, `priorites`=?, `namefile`=? where id=?;";
+        $quantites=$_POST['quantites'];
+        $designations=$_POST['designations'];
+        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile' where id=$id;";
         //$result = $db->query($sql); 
         $sth = $db->prepare($sql);    
-        $sth->execute(array($description,$priorites,$namefile,$id)); 
+        $sth->execute(array($dateplanifie));
+
         header("location: acueilAdmin2.php?id=$idda");
         exit; 
     } 
@@ -152,7 +158,6 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                 <div class="modal-body">
                                     <form action="#" method="POST" enctype="multipart/form-data">
                                         <div class="row">
-                                            <?php if(!$EstDemande){?>
                                             <div class="col-md-6">
                                                 <div class="mb-6 text-start">
                                                     <label class="form-label fw-bold" for="nom">Quantités</label>
@@ -164,16 +169,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                                     <label class="form-label fw-bold" for="prenom" >Désignations</label>
                                                     <input class="form-control designa" type="text" value="<?php echo $designations; ?>" name="designations" id="example-dat"  placeholder="Taper la designation">
                                                 </div>
-
                                             </div>
-                                            <?php }else{?>
-                                                <div class="col-md-6">
-                                                    <div class="mb-6 text-start">
-                                                        <label class="form-label fw-bold" for="nom">Description de la demande</label>
-                                                        <textarea class="form-control" type="text" name="description" id="example-date-input" rows="8" placeholder="Mettez la description ici"><?php echo $description; ?></textarea>
-                                                    </div>
-                                                </div>
-                                            <?php }?>
                                             <div class="col-md-6">
                                                 <div class="mb-3 text-start">
                                                     <label class="form-label fw-bold" for="priorites" >Priorités</label>
@@ -186,6 +182,12 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="planifie" >Date planifiée</label>
+                                                <input class="form-control planifie" type="date" name="dateplanifie" id="example">
+                                            </div>
+                                        </div>
                                             <div class="col-md-6 visually-hidden">
                                                 <div class="mb-3 text-start">
                                                     <label class="form-label fw-bold" for="priorites">Status</label>

@@ -3,6 +3,16 @@
     // On se connecte à là base de données
     include 'connexionReclamation.php';
 
+    if(!$_SESSION['niveau']){
+        echo "<div style='background-color: lightblue; width:700px; height:400px; margin-left:300px'>";
+        echo "<h1 style='color:red; text-align: center'>Error :</h1>";
+        echo "<h2 style='color:red; margin-left:10px'>Sessions expurées!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Assurez vous que les fenetres ne sont pas ouvertes plusieures fois!</h2>";
+        echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://localhost/GestionDemandePiece'>Acceder ici.</a></h2>";
+        echo "</div>";
+        return 0;
+    }
+    
     if(isset($_GET['page']) && !empty($_GET['page'])){
         $currentPage = (int) strip_tags($_GET['page']);
     }else{
@@ -535,6 +545,8 @@
                                                                                                 if($_SESSION['niveau']=='kemc' || $_SESSION['niveau']=='admin'){
                                                                                             ?>
                                                                                             <input type="hidden" class="idr" value="<?php echo $article['id']?>">
+                                                                                            <input type="hidden" class="idda" value="<?php echo $article['idda']?>">
+                                                                                            <input type="hidden" class="partielle" value="<?php echo $article['references']?>">
                                                                                             <input type="hidden" class="idreg" value="<?php echo $article['id']?>">
                                                                                             <input type="hidden" class="quantites" value="<?php echo $article['quantites']?>">
                                                                                             <input type="hidden" class="statuspart" value="<?php echo $article['statuspart']?>">
@@ -545,6 +557,8 @@
                                                                                                     $(document).ready( function(){
                                                                                                         $('#approuverCommande<?php echo $i; ?>').click(function(e) {
                                                                                                             var idr = $(this).closest("tr").find(".idr").val();
+                                                                                                            var idda = $(this).closest("tr").find(".idda").val();
+                                                                                                            var partielle = $(this).closest("tr").find(".partielle").val();
                                                                                                             var quantites = $(this).closest("tr").find(".quantites").val();
                                                                                                             var stat = $(this).closest("tr").find(".statuspart").val();
                                                                                                             var livraisonPart = $(this).closest("tr").find(".livraisonPart").val();
@@ -561,7 +575,7 @@
                                                                                                                 if (result.isConfirmed) {                                                                                                                  
                                                                                                                     $.ajax({
                                                                                                                             type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart+'&status='+stat,
+                                                                                                                            url: 'deleteAdmin.php?idr='+idr+'&quantites='+quantites+'&livraisonPart='+livraisonPart+'&status='+stat+'&idda='+idda+'&partielle='+partielle,
                                                                                                                             //data: str,
                                                                                                                             success: function( response ) {
                                                                                                                                 //console.log(url);
@@ -587,6 +601,7 @@
                                                                                                     $(document).ready( function(){
                                                                                                         $('#rejeterCommande<?php echo $i; ?>').click(function(e) {
                                                                                                             var id = $(this).closest("tr").find(".idr").val();
+                                                                                                            var idda = $(this).closest("tr").find(".idda").val();
                                                                                                             e.preventDefault();
                                                                                                             Swal.fire({
                                                                                                             title: 'En es-tu sure?',
@@ -600,7 +615,7 @@
                                                                                                                 if (result.isConfirmed) {                                                                                                                  
                                                                                                                     $.ajax({
                                                                                                                             type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?idreg='+id,
+                                                                                                                            url: 'deleteAdmin.php?idreg='+id+'&idda='+idda,
                                                                                                                             //data: str,
                                                                                                                             success: function( response ) {
                                                                                                                                 Swal.fire({

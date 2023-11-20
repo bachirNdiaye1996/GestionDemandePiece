@@ -11,28 +11,57 @@
 
     // On se connecte à là base de données
     include 'connect.php';
+    include 'mail.php';
 
     $mess1="";
 
     if(isset($_POST['valideLivraison'])){
-        if(!empty($_POST['status'])){
-            //echo $_POST['quantites'];
-              $status=htmlspecialchars($_POST['status']);
-              $id=htmlspecialchars($_POST['id']);
-              $user=htmlspecialchars($_POST['userLivrer']);
-              $req ="UPDATE articles SET statuspart=?, actifmang=2, rege=0, userlivrer=? WHERE id=$id;"; 
-              //$db->query($req); 
-              $reqtitre = $db->prepare($req);
-              $reqtitre->execute(array($status,$user));
+        if(!empty($_POST['livraison']) & ($_POST['livraison'] <= ($_POST['quantites']))){
+            $idda=htmlspecialchars($_POST['idda']);
+            $id=htmlspecialchars($_POST['id']);
+            $user=htmlspecialchars($_POST['userLivrer']);
+            $livraison=htmlspecialchars($_POST['livraison']);
+            $req ="UPDATE articles SET livraisonPart=?, actifmang=2, rege=0, userlivrer=? WHERE id=$id;"; 
+            //$db->query($req); 
+            $reqtitre = $db->prepare($req);
+            $reqtitre->execute(array($livraison,$user));
+            
+            //$messageD=$_SESSION['nomcomplet']." vient de modifier la livraison de la DA00".$idda.' que vous avez rejete'. ' Merci de bien verifier! <a href="http://localhost/GestionDemandePiece">Acceder ici.</a>';
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de modifier la livraison dans la DA00$idda que vous avez rejete, merci de bien verifier! </p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if(($article['niveau'] == 'kemc')){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Livraison rejetee',$messageD);
+                }
+            }
               
-              if(isset($_GET['id'])){
-                  $id = $_GET['id'];
-                  header("location:acueilAdmin2.php?id=$id");
-                  exit;
-              }
-          }elseif($_POST['livraison'] > ($_POST['quantites'])){
+            if(isset($_GET['id'])){
+                $id = $_GET['id'];
+                header("location:acueilAdmin2.php?id=$id");
+                exit;
+            }
+        }elseif($_POST['livraison'] > ($_POST['quantites'])){
             $mess1 = "error";
-          }      
+        }      
     }
 
     // On détermine le nombre total d'articles
@@ -80,7 +109,7 @@
     $nbutilisateur = (int) $result1['nb_utilisateur'];
 
     // On détermine le nombre total de demande
-    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0';";
+    $sql8 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `actifkemb`=0 and `actifmang`=0 and `references`='';";
     // On prépare la requête
     $query8 = $db->prepare($sql8);
 
@@ -95,7 +124,7 @@
     if($_SESSION['niveau'] =='mang' || $_SESSION['niveau'] =='admin'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`=0 and `actifmang`=0 and `description`!='0' and `rege`=1;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`=0 and `actifmang`=0 and `references`='' and `rege`=1;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -118,7 +147,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `description`!='0' and `actifmang`=0 and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`=0 and `references`='' and `actifmang`=0 and `rege`=1 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -433,11 +462,13 @@
                                                                             <table class="table table-nowrap align-middle">
                                                                                 <thead class="table-light">
                                                                                     <tr>   
-                                                                                    <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                                    
+                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
-                                                                                        <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <?php 
                                                                                         if(($_SESSION['niveau']=='mang' && $nbRege)){
@@ -458,22 +489,23 @@
                                                                                             //if($article['status'] == 'termine'){
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
-                                                                                    <td><?php echo "DA00".$article['idda']; ?></td>
-                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
+                                                                                        <td><?php echo "DA00".$article['idda'] ?></td>
+                                                                                        <td><?= $article['quantites'] ?></td>
+                                                                                        <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['statuspart'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['statuspart'] ?></span></td>
-                                                                                        <td><?= $article['userLivrer'] ?></td>
+                                                                                        <td><span class="badge badge-soft-success mb-0"><?= $article['status'] ?></span></td>
+                                                                                        <td><i class="btn btn-danger" id="rejet"><?= $article['livraisonPart'] ?></i></td>
+                                                                                        <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau']=='mang'){
                                                                                             ?>
-                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
                                                                                                 <a data-bs-toggle="modal" data-bs-target=".add-newlivrer" class="btn btn-success  w-lg "><i class=""></i>Modifier</a>
                                                                                             <?php
                                                                                             }
                                                                                             ?>
-                                                                                        </td> 
+                                                                                        </td>
                                                                                     </tr>
                                                                                     <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
                                                                                         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -509,11 +541,23 @@
                                         </div>
                                         <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="livraison">id</label>
+                                                <input class="form-control" type="text" value="<?= $article['idda'] ?>" name="idda" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 visually-hidden">
+                                            <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="quantites">id</label>
                                                 <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                             </div>
                                         </div> 
                                         <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="livraison">Livraison</label>
+                                                <input class="form-control" type="text" value="" name="livraison" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                            </div>
+                                        </div>  
+                                        <div class="col-md-6 visually-hidden">
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="priorites">Status</label>
                                                 <select class="form-control" name="status" value="Attente livraison">
