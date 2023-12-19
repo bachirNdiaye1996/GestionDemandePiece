@@ -125,7 +125,7 @@
     $nbReclamation = (int) $result['nb_articles'];
 
     // On détermine le nombre total d'articles
-    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `description`!='0' and `actifkemb`=0;";
+    $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `rege`=1 and `references`='';";
     // On prépare la requête
     $query = $db->prepare($sql);
 
@@ -161,7 +161,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`!='0' and `description`!='';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `references`='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -176,7 +176,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`!='0' and `description`!='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -201,7 +201,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`=$id and `description`!='0' and `description`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`=$id and `references`='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -469,90 +469,6 @@
             </div>           
         </div>
     </header>
-
-    <!-- ============================================================== -->
-    <!-- Start right Content here -->
-    <!-- ============================================================== -->
-    <div class="">
-        <div class="page-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-3">
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                             <h4 class="page-title mb-0 pl-5 text-center mb-3">Profil Utilisateur</h4>
-                        </div>
-                        <!-- end page title -->
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="user-profile-img">
-                                    <img src="image/avatar-3.png"
-                                    class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
-                                    alt="">
-                                    <div class="overlay-content rounded-top">
-                                            <div>
-                                                <div class="user-nav p-3">
-                                                    <div class="d-flex justify-content-end">
-                                                            
-                                                    </div>
-                                                </div>
-                                            </div>
-                                    </div>
-                                </div>
-                                <!-- end user-profile-img -->
-                                <div class="p-4 pt-0">
-                                <div class="mt-n5 position-relative text-center border-bottom pb-3">
-                                    <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
-                                                <div class="avatar-overlay">
-                                                    <input type="file" id="avatar-input" style="display: none;">
-                                                        <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
-                                                    </div>
-                                                </div>                                           
-                                                <div class="mt-3">
-                                                   <h5 class="mb-1"><?php echo $_SESSION['nomcomplet'] ?></h5>
-                                                   <span class="badge badge-soft-success mb-0">L'administrateur</span>
-                                                </div>
-                                    </div>
-                                    <div class="table-responsive mt-3 border-bottom pb-3" style="font-family: montserrat;">
-                                            <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                <tbody>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Matricule :</th>
-                                                        <td class="text-start fw-bold"><?php echo  $_SESSION['matricule'] ?></td><br>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Nom Complet :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['nomcomplet'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Email :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['email'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Niveau d'acces :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['niveau'] ?></td>
-                                                    </tr>
-                                                </tbody><!-- end tbody -->
-                                            </table>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </div>      
-                    <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Nav tabs -->
-                                    <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
-                                        <li class="nav-item">
-                                            <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Demandes en cours de la <?php echo "DA00".$id; ?></span> 
-                                            </a>
-                                        </li>                              
-                                    </ul>
-                                </div>
-                            </div>
                 <!-- Tab content -->
                 <div class="tab-content">
                                     <!-- end message -->
@@ -571,21 +487,26 @@
                                                                     data-bs-parent="#accordionFlushExample">
                                                                     <div class="accordion-body text-muted">
                                                                         <div class="table-responsive">
-                                                                            <table class="table table-nowrap align-middle">
+                                                                        <table class="table table-nowrap align-middle">
                                                                                 <thead class="table-light">
-                                                                                    <tr>  
-                                                                                        <th scope="col" class="fw-bold text-start">Nom DA<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>                                                                                     
-                                                                                        <th scope="col" class="fw-bold text-start">Demande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                    <tr>                                                                                       
+                                                                                        <th scope="col" class="fw-bold text-start">Quantités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Designations<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Priorités<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Transporteur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demandeur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Durée livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
                                                                                 </thead>
     
                                                                                 <tbody>
-                                                                                    <?php require_once 'fonctions.php'; ?>
                                                                                     <?php
                                                                                         $i=0;
                                                                                         foreach($articles as $article){
@@ -593,91 +514,70 @@
                                                                                             //if($article['status'] == 'termine'){
                                                                                     ?>                                                                              
                                                                                     <tr class="text-start">
-                                                                                        <td><?php echo "DA00".$article['idda']?></td>
-                                                                                        <td><?php trunkString($article['description'], 20); ?></td>
+                                                                                        <td><?= $article['quantites'] ?></td>
+                                                                                        <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>                                                                                       
+                                                                                        <td><?= $article['livraison'] ?></td>
+                                                                                        <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
-                                                                                        <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
-                                                                                        <?php 
-                                                                                                if($_SESSION['niveau']=='kemc'){
+                                                                                            <?php if($article['idtransporteur'] != 0){
                                                                                             ?>
-                                                                                                <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]"?>" data-bs-placement="top" title="Modifier commande" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
-                                                                                                <input type="hidden" class="id" value="<?php echo $article['id']?>">
-                                                                                                <input type="hidden" class="idda" value="<?php echo $article['idda']?>">
-                                                                                                <a href="javascript:void(0);" data-bs-placement="top" title="Suprimer la commande" class="suprimerCommande px-2 text-danger" data-bs-original-title="Suprimer la commande" aria-label="Suprimer la commande"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                                                                                <script>
-                                                                                                    $(document).ready( function(){
-                                                                                                        $('.suprimerCommande').click(function(e) {
-                                                                                                            var idda = $(this).closest("tr").find(".idda").val();
-                                                                                                            var id = $(this).closest("tr").find(".id").val();
-                                                                                                            e.preventDefault();
-                                                                                                            Swal.fire({
-                                                                                                            title: 'En es-tu sure?',
-                                                                                                            text: 'Voulez-vous vraiment supprimer cette commande ?',
-                                                                                                            icon: 'warning',
-                                                                                                            showCancelButton: true,
-                                                                                                            confirmButtonColor: '#3085d6',
-                                                                                                            cancelButtonColor: '#d33',
-                                                                                                            confirmButtonText: "SUPPRIMER LA COMMANDE",
-                                                                                                            }).then((result) => {
-                                                                                                                if (result.isConfirmed) {                                                                                                                  
-                                                                                                                    $.ajax({
-                                                                                                                            type: "POST",
-                                                                                                                            url: 'deleteAdmin.php?id='+id+'&idda='+idda,
-                                                                                                                            //data: str,
-                                                                                                                            success: function( response ) {
-                                                                                                                                Swal.fire({
-                                                                                                                                    text: 'Commande suprimée avec success!',
-                                                                                                                                    icon: 'success',
-                                                                                                                                    timer: 3000,
-                                                                                                                                    showConfirmButton: false,
-                                                                                                                                });
-                                                                                                                                location.reload();
-                                                                                                                            },
-                                                                                                                            error: function( response ) {
-                                                                                                                                $('#status').text('Impossible de supprimer la commande : '+ response.status + " " + response.statusText);
-                                                                                                                                //console.log( response );
-                                                                                                                            }						
-                                                                                                                    });
-                                                                                                                }
-                                                                                                            });
-                                                                                                        });
-                                                                                                    });
-                                                                                                </script>
+                                                                                                <?php 
+                                                                                                    $idDemandeur = $article['idtransporteur'];
+                                                                                                    $sql2 = "SELECT * FROM `transporteur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomComplet'];
+
+                                                                                                ?>
                                                                                             <?php
-                                                                                            }
+                                                                                                }else{echo "Attente livraison";}
                                                                                             ?>
-                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#fileModal1<?php echo $i; ?>" data-bs-url="images/test.pdf" data-bs-placement="top" title="Afficher Demande" class="px-2 text-primary" data-bs-original-title="Afficher Demande" aria-label="Afficher Demande"><i class="bx bx-show-alt font-size-18"></i></a>
-                                                                                                <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <?php if($article['iddemandeur'] != 0){
+                                                                                            ?>
                                                                                             <?php 
-                                                                                                if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0){
+                                                                                                    $idDemandeur = $article['iddemandeur'];
+                                                                                                    $sql2 = "SELECT * FROM `demandeur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomcomplet'];
                                                                                             ?>
-                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".add-newlivrer" class="btn btn-success"><i class=""></i>Livrer</a>
                                                                                             <?php
-                                                                                            }
+                                                                                                }else{echo "Pas défini";}
                                                                                             ?>
-                                                                                            
+                                                                                        </td>
+                                                                                        <td><?= $article['datecreation'] ?></td>
+                                                                                        <td><span class="<?php if($article['datelivraison'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivraison'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivraison'];}?></span></td>
+                                                                                        <td><?php
+                                                                                            //$now = time();
+                                                                                            $now = time();
+                                                                                            $dateCreation = strtotime($article['datecreation']);
+                                                                                            $diff2 = $now - $dateCreation;
+                                                                                            $diff = strtotime($article['datelivraison']) - $dateCreation;
+                                                                                            if(floor($diff/(60*60*24)) == 0){echo "Moins de 24H";}elseif(floor($diff/(60*60*24))<0){echo floor($diff2/(60*60*24))."  (JOURS)";}else{echo floor($diff/(60*60*24))."  (JOURS)";}
+                                                                                        ?></td>
+                                                                                        <td>
+                                                                                            <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                         </td> 
                                                                                     </tr>
-                                                                                    <!-- Modal pour afficher le fichier -->
-                                                                                    <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
-                                                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                                                            <div class="modal-content">
-                                                                                                <div class="modal-header">
-                                                                                                    <h5 class="modal-title" id="fileModalLabel">Description du message</h5>
-                                                                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                                                                                        <span aria-hidden="true">&times;</span>
-                                                                                                    </button>
-                                                                                                </div>  
-                                                                                                <h6 class="form-label fw-bold" for="nom" style="margin-left:25px; margin-top:10px;">Message :</h6>
-                                                                                                <div class="modal-body border border-warning" style="margin:70px; border-radius: 15px 30px; margin-top:20px; background-color: #fef1df;">
-                                                                                                    <h4><?php echo $article['description']; ?></h4>                                                                                                
-                                                                                                </div>                                                                                             
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
                                                                                      <!-- Modal pour afficher le fichier -->
                                                                                     <div class="modal fade" id="fileModal<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
                                                                                         <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -730,12 +630,6 @@
                                                                                                                     <input class="form-control" type="text" value="<?= $article['id'] ?>" name="id" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                                                                                                 </div>
                                                                                                             </div> 
-                                                                                                            <div class="col-md-6 visually-hidden">
-                                                                                                                <div class="mb-3 text-start">
-                                                                                                                    <label class="form-label fw-bold" for="quantites">id</label>
-                                                                                                                    <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
-                                                                                                                </div>
-                                                                                                            </div>
                                                                                                             <div class="col-md-6">
                                                                                                                 <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="priorites">Status</label>
@@ -755,7 +649,7 @@
                                                                                                                     ?>" name="userLivrer" id="example-date-input">
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                            <div class="col-md-6">
                                                                                                                 <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="livraison">Livraison</label>
                                                                                                                     <input class="form-control" type="text" value="" name="livraison" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
@@ -764,19 +658,10 @@
                                                                                                     </div>
                                                                                                         <div class="row mt-2">
                                                                                                             <div class="col-md-12 text-end">
-                                                                                                            <?php if($mess1 == "error"){ ?> 
-                                                                                                                <script>    Swal.fire({
-                                                                                                                  text: 'La quantité à livrer est supérieure à la quantité demandée!',
-                                                                                                                  icon: 'error',
-                                                                                                                  timer: 3500,
-                                                                                                                  showConfirmButton: false,
-                                                                                                                  });
-                                                                                                                </script> 
-                                                                                                              <?php } 
-                                                                                                            ?>
+                                                                                                                <div class="col-md-8 align-items-center col-md-12 text-end">
                                                                                                                     <div class="d-flex gap-2 pt-4">                           
                                                                                                                         <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
-                                                                                                                        <input class="btn btn-success  w-lg bouton" name="valideLivraison" type="submit" value="Livrer">
+                                                                                                                        <input class="btn btn-success  w-lg bouton" name="valideLivraison" type="submit" value="Enregistrer">
                                                                                                                     </div>
                                                                                                                 </div>
                                                                                                             </div>
@@ -813,17 +698,17 @@
                                                                                     <div class="float-sm-end">
                                                                                         <ul class="pagination mb-sm-0">
                                                                                             <li class="page-item <?= ($currentPage == 1) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
                                                                                             </li>
                                                                                             <?php for($page = 1; $page <= $pages; $page++): ?>
                                                                                             <!-- Lien vers chacune des pages (activé si on se trouve sur la page correspondante) -->
                                                                                             <li class="page-item <?= ($currentPage == $page) ? "active" : "" ?>">
-                                                                                                    <a href="?page=<?= $page ?>" class="page-link"><?= $page ?></a>
+                                                                                                    <a href="?id=<?= $_GET['id'] ?>&page=<?= $page ?>" class="page-link"><?= $page ?></a>
                                                                                             </li>
                                                                                             <?php endfor ?>
                                                                                             <!-- Lien vers la page suivante (désactivé si on se trouve sur la dernière page) -->
                                                                                             <li class="page-item <?= ($currentPage == $pages) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
                                                                                             </li>
                                                                                         </ul>
                                                                                     </div>

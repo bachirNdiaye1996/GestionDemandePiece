@@ -16,7 +16,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `description`='0';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `idda`=$id and `references`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -39,7 +39,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`='$id' and `description`='0' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`='$id' and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -56,7 +56,7 @@
         
         // ----------- On definie le nombre de demande
         
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `description`!='0' and `description`!='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `references`='' and `idda`=$id ;";
             
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -276,90 +276,6 @@
             </div>           
         </div>
     </header>
-
-    <!-- ============================================================== -->
-    <!-- Start right Content here -->
-    <!-- ============================================================== -->
-    <div class="">
-        <div class="page-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-3">
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                             <h4 class="page-title mb-0 pl-5 text-center mb-3">Profil Utilisateur</h4>
-                        </div>
-                        <!-- end page title -->
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="user-profile-img">
-                                    <img src="image/avatar-3.png"
-                                    class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
-                                    alt="">
-                                    <div class="overlay-content rounded-top">
-                                            <div>
-                                                <div class="user-nav p-3">
-                                                    <div class="d-flex justify-content-end">
-                                                            
-                                                    </div>
-                                                </div>
-                                            </div>
-                                    </div>
-                                </div>
-                                <!-- end user-profile-img -->
-                                <div class="p-4 pt-0">
-                                <div class="mt-n5 position-relative text-center border-bottom pb-3">
-                                    <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
-                                                <div class="avatar-overlay">
-                                                    <input type="file" id="avatar-input" style="display: none;">
-                                                        <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
-                                                    </div>
-                                                </div>                                           
-                                                <div class="mt-3">
-                                                   <h5 class="mb-1"><?php echo $_SESSION['nomcomplet'] ?></h5>
-                                                   <span class="badge badge-soft-success mb-0">L'administrateur</span>
-                                                </div>
-                                    </div>
-                                    <div class="table-responsive mt-3 border-bottom pb-3" style="font-family: montserrat;">
-                                            <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                <tbody>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Matricule :</th>
-                                                        <td class="text-start fw-bold"><?php echo  $_SESSION['matricule'] ?></td><br>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Nom Complet :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['nomcomplet'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Email :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['email'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Niveau d'acces :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['niveau'] ?></td>
-                                                    </tr>
-                                                </tbody><!-- end tbody -->
-                                            </table>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </div>      
-                    <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Nav tabs -->
-                                    <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
-                                        <li class="nav-item">
-                                            <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Liste toutes les commandes <?php echo "DA00".$id; ?> </span> 
-                                            </a>
-                                        </li>                              
-                                    </ul>
-                                </div>
-                            </div>
                 <!-- Tab content -->
                 <div class="tab-content">
                                     <!-- end message -->
@@ -389,6 +305,8 @@
                                                                                         <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Transporteur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demandeur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Durée livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
@@ -412,8 +330,51 @@
                                                                                         <td><?= $article['livraison'] ?></td>
                                                                                         <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
+                                                                                        <td>
+                                                                                            <?php if($article['idtransporteur'] != 0){
+                                                                                            ?>
+                                                                                                <?php 
+                                                                                                    $idDemandeur = $article['idtransporteur'];
+                                                                                                    $sql2 = "SELECT * FROM `transporteur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomComplet'];
+
+                                                                                                ?>
+                                                                                            <?php
+                                                                                                }else{echo "Attente livraison";}
+                                                                                            ?>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <?php if($article['iddemandeur'] != 0){
+                                                                                            ?>
+                                                                                            <?php 
+                                                                                                    $idDemandeur = $article['iddemandeur'];
+                                                                                                    $sql2 = "SELECT * FROM `demandeur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomcomplet'];
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                }else{echo "Pas défini";}
+                                                                                            ?>
+                                                                                        </td>
                                                                                         <td><?= $article['datecreation'] ?></td>
-                                                                                        <td><?= $article['datelivraison'] ?></td>
+                                                                                        <td><span class="<?php if($article['datelivraison'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivraison'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivraison'];}?></span></td>
                                                                                         <td><?php
                                                                                             //$now = time();
                                                                                             $now = time();
@@ -538,17 +499,17 @@
                                                                                     <div class="float-sm-end">
                                                                                         <ul class="pagination mb-sm-0">
                                                                                             <li class="page-item <?= ($currentPage == 1) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
                                                                                             </li>
                                                                                             <?php for($page = 1; $page <= $pages; $page++): ?>
                                                                                             <!-- Lien vers chacune des pages (activé si on se trouve sur la page correspondante) -->
                                                                                             <li class="page-item <?= ($currentPage == $page) ? "active" : "" ?>">
-                                                                                                    <a href="?page=<?= $page ?>" class="page-link"><?= $page ?></a>
+                                                                                                    <a href="?id=<?= $_GET['id'] ?>&page=<?= $page ?>" class="page-link"><?= $page ?></a>
                                                                                             </li>
                                                                                             <?php endfor ?>
                                                                                             <!-- Lien vers la page suivante (désactivé si on se trouve sur la dernière page) -->
                                                                                             <li class="page-item <?= ($currentPage == $pages) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
                                                                                             </li>
                                                                                         </ul>
                                                                                     </div>

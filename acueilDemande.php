@@ -338,88 +338,8 @@
     <!-- ============================================================== -->
     <!-- Start right Content here -->
     <!-- ============================================================== -->
-    <div class="">
-        <div class="page-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-3">
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                             <h4 class="page-title mb-0 pl-5 text-center mb-3">Profil Utilisateur</h4>
-                        </div>
-                        <!-- end page title -->
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="user-profile-img">
-                                    <img src="image/avatar-3.png"
-                                    class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
-                                    alt="">
-                                    <div class="overlay-content rounded-top">
-                                            <div>
-                                                <div class="user-nav p-3">
-                                                    <div class="d-flex justify-content-end">
-                                                            
-                                                    </div>
-                                                </div>
-                                            </div>
-                                    </div>
-                                </div>
-                                <!-- end user-profile-img -->
-                                <div class="p-4 pt-0">
-                                <div class="mt-n5 position-relative text-center border-bottom pb-3">
-                                    <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
-                                                <div class="avatar-overlay">
-                                                    <input type="file" id="avatar-input" style="display: none;">
-                                                        <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
-                                                    </div>
-                                                </div>                                           
-                                                <div class="mt-3">
-                                                   <h5 class="mb-1"><?php echo $_SESSION['nomcomplet'] ?></h5>
-                                                   <span class="badge badge-soft-success mb-0">L'administrateur</span>
-                                                </div>
-                                    </div>
-                                    <div class="table-responsive mt-3 border-bottom pb-3" style="font-family: montserrat;">
-                                            <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                <tbody>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Matricule :</th>
-                                                        <td class="text-start fw-bold"><?php echo  $_SESSION['matricule'] ?></td><br>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Nom Complet :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['nomcomplet'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Email :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['email'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Niveau d'acces :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['niveau'] ?></td>
-                                                    </tr>
-                                                </tbody><!-- end tbody -->
-                                            </table>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </div>      
-                    <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Nav tabs -->
-                                    <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
-                                        <li class="nav-item">
-                                            <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Demandes en cours</span> 
-                                            </a>
-                                        </li>                              
-                                    </ul>
-                                </div>
-                            </div>
                 <!-- Tab content -->
-                <div class="tab-content">
+                <div class="tab-content mt-5">
                                     <!-- end message -->
                                     <div class="tab-pane active" id="termine" role="tabpanel">
                                         <div class="card">
@@ -448,6 +368,10 @@
                                                                                         <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Transporteur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demandeur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date livraison partielle<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Durée commande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
                                                                                 </thead>
@@ -464,7 +388,7 @@
                                                                                         <td><?= $article['quantites'] ?></td>
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                        <td><span class="<?php if($article['status'] == "livraison partielle" || $article['status'] == "Attente approbation"){echo "badge badge-soft-success mb-0";}elseif($article['status'] == "Attente livraison"){echo "badge badge-soft-warning  mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
                                                                                             ?>
@@ -479,6 +403,56 @@
                                                                                         <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td><?= $article['datecreation'] ?></td>
+                                                                                        <td>
+                                                                                            <?php if($article['idtransporteur'] != 0){
+                                                                                            ?>
+                                                                                                <?php 
+                                                                                                    $idDemandeur = $article['idtransporteur'];
+                                                                                                    $sql2 = "SELECT * FROM `transporteur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomComplet'];
+
+                                                                                                ?>
+                                                                                            <?php
+                                                                                                }else{echo "Attente livraison";}
+                                                                                            ?>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <?php if($article['iddemandeur'] != 0){
+                                                                                            ?>
+                                                                                            <?php 
+                                                                                                    $idDemandeur = $article['iddemandeur'];
+                                                                                                    $sql2 = "SELECT * FROM `demandeur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomcomplet'];
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                }else{echo "Pas défini";}
+                                                                                            ?>
+                                                                                        </td>
+                                                                                        <td><span class="<?php if($article['datelivraison'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivraison'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivraison'];}?></span></td>
+                                                                                        <td><?php
+                                                                                            $now = time();
+                                                                                            $dateCreation = strtotime($article['datecreation']);
+                                                                                            $diff = $now - $dateCreation;
+                                                                                            if(floor($diff/(60*60*24)) == 0 && $article['datelivraison'] != NULL){echo "Moins de 24H";}else{echo floor($diff/(60*60*24))."  (JOURS)";}
+                                                                                        ?></td>
                                                                                         <td>
                                                                                         <?php 
                                                                                                 if($_SESSION['niveau']=='kemc'){
@@ -996,11 +970,6 @@
                         </div><!-- /.modal-content -->
                     </div><!-- /.modal-dialog -->
                 </div><!-- /.modal -->
-
-                </div> 
-                </div>
-                </div>                                  
-        </div> 
     </div>
     <?php include 'footer.php'; ?>   
     

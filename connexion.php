@@ -19,8 +19,9 @@
             //print_r($recupeUser);
             if($recupeUser->rowCount() > 0){
                 $Utilisateur = $recupeUser->fetch();
-                if($Utilisateur['niveau'] == 'kemc'){
+                //if($Utilisateur['niveau'] == 'kemc'){
                     $_SESSION['ProduitRef']=[];
+                    $_SESSION['ProduitDesign1']=[];
                     $_SESSION['ProduitDesign']=[];
 
                    $serverName = "SERVINTERAL\SQL2012";
@@ -47,10 +48,10 @@
                         {
                             //echo($row['ID_PRODUCT']."-----------".$row['NO_PRODUCT']."-----------".$row['DESCRIPTION']."-----------");
                             //echo("<br/>");
-                            //$ProduitRef[$productCount]=$row['NO_PRODUCT'];
-                            //$ProduitDesign[$productCount]=utf8_decode($row['DESCRIPTION']);
+                            //[$productCount]=$row['NO_PRODUCT'];
+                            $_SESSION['ProduitDesign1'][$productCount]=utf8_encode($row['DESCRIPTION']);
                             //$_SESSION['ProduitRef'][$productCount]=$row['NO_PRODUCT'];
-                            $_SESSION['ProduitDesign'][$productCount]="DESI : ".utf8_encode($row['DESCRIPTION'])." REFE : ".$row['NO_PRODUCT'];
+                            $_SESSION['ProduitDesign'][$productCount]="DESI :".utf8_encode($row['DESCRIPTION'])." REFE : ".$row['NO_PRODUCT'];
                             //$_SESSION['ProduitDesign'][$productCount]=mb_detect_encoding($row['DESCRIPTION'], 'UTF-8'); 
                             $productCount++;
                         }
@@ -61,7 +62,7 @@
                     {
                         echo("Error!");
                     }
-                }
+                //}
                 //On définit des variables de session
                 $_SESSION['matricule'] = $Utilisateur['matricule'];
                 $_SESSION['nomcomplet'] = $Utilisateur['nomcomplet'];

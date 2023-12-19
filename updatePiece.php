@@ -65,12 +65,13 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $dateplanifie=($_POST['dateplanifie']);
         $quantites=$_POST['quantites'];
         $designations1=$_POST['designations'];
+        $demandeur=htmlspecialchars($_POST['demandeur']);
         //$reference=$_POST['references'];
         $Chaine=explode("REFE :",$designations1,2);
         $reference=$Chaine[1];
         $designations2=explode("DESI :",$Chaine[0],2);
         $designations=$designations2[1];
-        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile' where id=$id;";
+        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
         //$result = $db->query($sql); 
         $sth = $db->prepare($sql);    
         $sth->execute(array($dateplanifie));
@@ -82,10 +83,11 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $idda = $_GET['idda'];
         $id = $_GET['id'];
         $dateplanifie=($_POST['dateplanifie']);
+        $demandeur=htmlspecialchars($_POST['demandeur']);
         $priorites=$_POST['priorites'];
         $quantites=$_POST['quantites'];
         $designations=$_POST['designations'];
-        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile' where id=$id;";
+        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
         //$result = $db->query($sql); 
         $sth = $db->prepare($sql);    
         $sth->execute(array($dateplanifie));
@@ -183,11 +185,35 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                            <div class="mb-3 text-start">
-                                                <label class="form-label fw-bold" for="planifie" >Date planifiée</label>
-                                                <input class="form-control planifie" type="date" name="dateplanifie" id="example">
+                                                <div class="mb-3 text-start">
+                                                    <label class="form-label fw-bold" for="planifie" >Date planifiée</label>
+                                                    <input class="form-control planifie" type="date" name="dateplanifie" id="example">
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3 text-start">
+                                                    <label class="form-label fw-bold" for="priorites" >Demandeur</label>
+                                                    <?php
+                                                    $sql2 = "SELECT * FROM `demandeur` ;";
+            
+                                                    // On prépare la requête
+                                                    $query2 = $db->prepare($sql2);
+                                                    
+                                                    // On exécute
+                                                    $query2->execute();
+                                                    
+                                                    // On récupère le nombre de demandeur
+                                                    $result2 = $query2->fetchAll();
+
+                                                    ?>
+                                                    <select class="form-control" name="demandeur">
+                                                        <?php
+                                                        foreach($result2 as $article){ ?>
+                                                            <option value="<?php echo "$article[id]"; ?>"><?php echo "$article[nomcomplet]"; ?></option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+                                            </div>
                                             <div class="col-md-6 visually-hidden">
                                                 <div class="mb-3 text-start">
                                                     <label class="form-label fw-bold" for="priorites">Status</label>

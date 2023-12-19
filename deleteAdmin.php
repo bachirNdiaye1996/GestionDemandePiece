@@ -30,36 +30,66 @@
         $status = "livraison partielle";
         $reslt = $_GET['quantites'] - $_GET['livraisonPart'];
         if($reslt>0){
-            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(),`status`=?, `quantites`=?,`livraison`=? where id=?";
+            $id1 = $_GET['idr'];
+            $idda1 = $_GET['idda'];
+
+            
+            $sql2 = "SELECT * FROM `articles` where `id`=$id1;";
+        
+            // On prépare la requête
+            $query2 = $db->prepare($sql2);
+
+            // On exécute
+            $query2->execute();
+
+            // On récupère le nombre d'articles
+            $result2 = $query2->fetch();
+            
+
+            if($result2['livraison'] == 0){
+                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle + 1 where id=?");
+                //$reqtitre = $db->prepare($sql);
+                $insertUser->execute(array($idda1));
+            }
+
+            $sql = "UPDATE `articles` SET `actifmang`=0, `datelivapprouv`=current_timestamp(),`status`=?, `quantites`=?,`livraison`=? where id=?";
             //$db->query($sql);
             $reqtitre = $db->prepare($sql);
             $reqtitre->execute(array($status,$reslt,$livraison,$id));
 
-            $sql = "SELECT * FROM `da` where `id`=$idda;";
-        
-            // On prépare la requête
-            $query = $db->prepare($sql);
-
-            // On exécute
-            $query->execute();
-
-            // On récupère le nombre d'articles
-            $result = $query->fetch();
-            
-
-            if($result['statuspartielle'] == 0){
-                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle + 1 where id=?");
-                //$reqtitre = $db->prepare($sql);
-                $insertUser->execute(array($idda));
-            }
+            $insertUser=$db->prepare("UPDATE da SET  datelivraison=current_timestamp() where id=?");
+            //$reqtitre = $db->prepare($sql);
+            $insertUser->execute(array($_GET['idda']));
 
             /*//$idd=$_GET['idda'];
             $insertUser1=$db->prepare("UPDATE da SET  statusattente = statusattente - 1 where id=?");
             //$reqtitre = $db->prepare($sql);
             $insertUser1->execute(array($idda));*/
         }elseif($reslt == 0){
+            $id1 = $_GET['idr'];
+            $idda1 = $_GET['idda'];
+
+            
+            $sql2 = "SELECT * FROM `articles` where `id`=$id1;";
+        
+            // On prépare la requête
+            $query2 = $db->prepare($sql2);
+
+            // On exécute
+            $query2->execute();
+
+            // On récupère le nombre d'articles
+            $result2 = $query2->fetch();
+            
+
+            if($result2['livraison'] != 0){
+                //$idd=$_GET['idda'];
+                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle - 1 where id=?");
+                //$reqtitre = $db->prepare($sql);
+                $insertUser->execute(array($idda));
+            }
             //$status="Terminé";
-            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(), `quantites`=?,  `status`='Terminé',`livraison`=? where id=?";
+            $sql = "UPDATE `articles` SET `actifmang`=0, `datelivapprouv`=current_timestamp(), `quantites`=?,  `status`='Terminé',`livraison`=? where id=?";
             //$db->query($sql);
             $reqtitre = $db->prepare($sql);
             $reqtitre->execute(array($reslt,$livraison,$id));
@@ -73,10 +103,9 @@
             //$reqtitre = $db->prepare($sql);
             $insertUser->execute(array($idda));
 
-            //$idd=$_GET['idda'];
-            $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle - 1 where id=?");
-             //$reqtitre = $db->prepare($sql);
-            $insertUser->execute(array($idda));
+            $insertUser=$db->prepare("UPDATE da SET  datelivraison=current_timestamp() where id=?");
+            //$reqtitre = $db->prepare($sql);
+            $insertUser->execute(array($_GET['idda']));
         }
         
         //$messageD=$_SESSION['nomcomplet']." vient d'accepter la livraison de piéces de la DA00".$idda. ` Merci! <a href="http://localhost/GestionDemandePiece">Acceder ici.</a> `;
@@ -117,36 +146,66 @@
         $status = "livraison partielle";
         $reslt = $_GET['quantites'] - $_GET['livraisonPart'];
         if($reslt>0){
-            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(),`status`=?, `quantites`=?,`livraison`=? where id=?";
+            $id1 = $_GET['idr'];
+            $idda1 = $_GET['idda'];
+
+            
+            $sql2 = "SELECT * FROM `articles` where `id`=$id1;";
+        
+            // On prépare la requête
+            $query2 = $db->prepare($sql2);
+
+            // On exécute
+            $query2->execute();
+
+            // On récupère le nombre d'articles
+            $result2 = $query2->fetch();
+            
+
+            if($result2['livraison'] == 0){
+                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle + 1 where id=?");
+                //$reqtitre = $db->prepare($sql);
+                $insertUser->execute(array($idda1));
+            }
+
+            $sql = "UPDATE `articles` SET `actifmang`=0, `datelivapprouv`=current_timestamp(),`status`=?, `quantites`=?,`livraison`=? where id=?";
             //$db->query($sql);
             $reqtitre = $db->prepare($sql);
             $reqtitre->execute(array($status,$reslt,$livraison,$id));
-
-            $sql = "SELECT * FROM `da` where `id`=$idda;";
-        
-            // On prépare la requête
-            $query = $db->prepare($sql);
-
-            // On exécute
-            $query->execute();
-
-            // On récupère le nombre d'articles
-            $result = $query->fetch();
-            
-
-            if($result['statuspartielle'] == 0){
-                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle + 1 where id=?");
-                //$reqtitre = $db->prepare($sql);
-                $insertUser->execute(array($idda));
-            }
 
             /*//$idd=$_GET['idda'];
             $insertUser1=$db->prepare("UPDATE da SET  statusattente = statusattente - 1 where id=?");
             //$reqtitre = $db->prepare($sql);
             $insertUser1->execute(array($idda));*/
+
+            $insertUser=$db->prepare("UPDATE da SET  datelivraison=current_timestamp() where id=?");
+            //$reqtitre = $db->prepare($sql);
+            $insertUser->execute(array($_GET['idda']));
         }elseif($reslt == 0){
+            $id1 = $_GET['idr'];
+            $idda1 = $_GET['idda'];
+
+            
+            $sql2 = "SELECT * FROM `articles` where `id`=$id1;";
+        
+            // On prépare la requête
+            $query2 = $db->prepare($sql2);
+
+            // On exécute
+            $query2->execute();
+
+            // On récupère le nombre d'articles
+            $result2 = $query2->fetch();
+            
+
+            if($result2['livraison'] != 0){
+                //$idd=$_GET['idda'];
+                $insertUser=$db->prepare("UPDATE da SET  statuspartielle = statuspartielle - 1 where id=?");
+                //$reqtitre = $db->prepare($sql);
+                $insertUser->execute(array($idda));
+            }
             //$status="Terminé";
-            $sql = "UPDATE `articles` SET `actifmang`=0, datelivraison=current_timestamp(), `quantites`=?,  `status`='Terminé',`livraison`=? where id=?";
+            $sql = "UPDATE `articles` SET `actifmang`=0, `datelivapprouv`=current_timestamp(), `quantites`=?,  `status`='Terminé',`livraison`=? where id=?";
             //$db->query($sql);
             $reqtitre = $db->prepare($sql);
             $reqtitre->execute(array($reslt,$livraison,$id));
@@ -159,6 +218,11 @@
             $insertUser=$db->prepare("UPDATE da SET  statusattente = statusattente - 1 where id=?");
             //$reqtitre = $db->prepare($sql);
             $insertUser->execute(array($idda));
+
+            $insertUser=$db->prepare("UPDATE da SET  datelivraison=current_timestamp() where id=?");
+            //$reqtitre = $db->prepare($sql);
+            $insertUser->execute(array($_GET['idda']));
+
         }
         //$messageD=$_SESSION['nomcomplet']." vient d'accepter la livraison de frais et services de la DA00".$idda. ' Merci! <a href="http://localhost/GestionDemandePiece">Acceder ici.</a>';
         $messageD = "

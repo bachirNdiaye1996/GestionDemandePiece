@@ -170,6 +170,8 @@
                             <a class="dropdown-item d-flex align-items-center" href="modifiercompte.php"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
                             <a class="dropdown-item d-flex align-items-center" href="ajoutercompte.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter utilisateur</span></a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item d-flex align-items-center" href="recherchePieces.php"><i class="mdi mdi mdi-magnify text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Rechercher piéce</span></a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                         </div>
                         <?php
@@ -182,6 +184,8 @@
                             <div class="p-3 border-bottom">
                                 <h6 class="mb-0">Maintenance</h6>
                             </div>
+                            <a class="dropdown-item d-flex align-items-center" href="utilisateur.php"><i class="mdi mdi mdi-account text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Rechercher piéce</span></a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target=".add-new5" href=""><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
@@ -355,90 +359,6 @@
             </div>           
         </div>
     </header>
-
-    <!-- ============================================================== -->
-    <!-- Start right Content here -->
-    <!-- ============================================================== -->
-    <div class="">
-        <div class="page-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-3">
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                             <h4 class="page-title mb-0 pl-5 text-center mb-3">Profil Utilisateur</h4>
-                        </div>
-                        <!-- end page title -->
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="user-profile-img">
-                                    <img src="image/avatar-3.png"
-                                    class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
-                                    alt="">
-                                    <div class="overlay-content rounded-top">
-                                            <div>
-                                                <div class="user-nav p-3">
-                                                    <div class="d-flex justify-content-end">
-                                                            
-                                                    </div>
-                                                </div>
-                                            </div>
-                                    </div>
-                                </div>
-                                <!-- end user-profile-img -->
-                                <div class="p-4 pt-0">
-                                <div class="mt-n5 position-relative text-center border-bottom pb-3">
-                                    <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
-                                                <div class="avatar-overlay">
-                                                    <input type="file" id="avatar-input" style="display: none;">
-                                                        <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
-                                                    </div>
-                                                </div>                                           
-                                                <div class="mt-3">
-                                                   <h5 class="mb-1"><?php echo $_SESSION['nomcomplet'] ?></h5>
-                                                   <span class="badge badge-soft-success mb-0">L'administrateur</span>
-                                                </div>
-                                    </div>
-                                    <div class="table-responsive mt-3 border-bottom pb-3" style="font-family: montserrat;">
-                                            <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                <tbody>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Matricule :</th>
-                                                        <td class="text-start fw-bold"><?php echo  $_SESSION['matricule'] ?></td><br>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Nom Complet :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['nomcomplet'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Email :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['email'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Niveau d'acces :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['niveau'] ?></td>
-                                                    </tr>
-                                                </tbody><!-- end tbody -->
-                                            </table>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </div>      
-                    <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Nav tabs -->
-                                    <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
-                                        <li class="nav-item">
-                                            <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Commandes à approuver commandes</span> 
-                                            </a>
-                                        </li>                              
-                                    </ul>
-                                </div>
-                            </div>
                 <!-- Tab content -->
                 <div class="tab-content">
                                     <!-- end message -->
@@ -467,6 +387,8 @@
                                                                                         <th scope="col" class="fw-bold text-start">Status<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Livré Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Transporteur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demandeur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
@@ -488,6 +410,49 @@
                                                                                         <td><span class="<?php if($article['statuspart'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['statuspart'] ?></span></td>
                                                                                         <td><?= $article['livraisonPart'] ?></td>
                                                                                         <td><?= $article['userLivrer'] ?></td>
+                                                                                        <td>
+                                                                                            <?php if($article['idtransporteur'] != 0){
+                                                                                            ?>
+                                                                                                <?php 
+                                                                                                    $idDemandeur = $article['idtransporteur'];
+                                                                                                    $sql2 = "SELECT * FROM `transporteur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomComplet'];
+
+                                                                                                ?>
+                                                                                            <?php
+                                                                                                }else{echo "Attente livraison";}
+                                                                                            ?>
+                                                                                         </td>
+                                                                                        <td>
+                                                                                            <?php if($article['iddemandeur'] != 0){
+                                                                                            ?>
+                                                                                            <?php 
+                                                                                                    $idDemandeur = $article['iddemandeur'];
+                                                                                                    $sql2 = "SELECT * FROM `demandeur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomcomplet'];
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                }else{echo "Pas défini";}
+                                                                                            ?>
+                                                                                        </td>
                                                                                         <td><?= $article['datecreation'] ?></td>
                                                                                         <td>
                                                                                         <?php 
@@ -502,6 +467,7 @@
                                                                                             <input type="hidden" class="livraisonPart" value="<?php echo $article['livraisonPart']?>">
                                                                                             <a href="javascript:void(0);" id="approuverCommande<?php echo $i; ?>" class="btn btn-success"><ion-icon name="arrow-undo-outline"></ion-icon>Accepter</a>
                                                                                             <a href="javascript:void(0);" id="rejeterCommande<?php echo $i; ?>" class="btn btn-danger "><ion-icon name="arrow-undo-outline"></ion-icon>Rejeter</a>
+                                                                                            <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                             <script>
                                                                                                     $(document).ready( function(){
                                                                                                         $('#approuverCommande<?php echo $i; ?>').click(function(e) {
@@ -588,6 +554,41 @@
                                                                                             </script>
                                                                                         </td> 
                                                                                     </tr>
+                                                                                     <!-- Modal pour afficher le fichier -->
+                                                                                     <div class="modal fade" id="fileModal<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="fileModalLabel">Photo de la piéce <?php $temp2 = $article['namefile']; echo $temp2; ?></h5>
+                                                                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                                <?php 
+                                                                                                    if($article['namefile'] != null){
+                                                                                                ?>
+                                                                                                    <div class="modal-body" style="max-height: 90%">
+                                                                                                    <iframe
+                                                                                                        src="./fichiers/<?php echo $article['namefile'];?>"
+                                                                                                        width="98%"
+                                                                                                        height="750"
+                                                                                                        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
+                                                                                                    ></iframe>
+                                                                                                    </div>
+                                                                                                <?php 
+                                                                                                    }else{
+                                                                                                ?>                
+                                                                                                    <h2 style="margin-left:150px; margin-top:20px; color:red;">Il y'a pas d'image à cette commande!</h2>
+                                                                                                <?php 
+                                                                                                    }
+                                                                                                ?>
+                                                                                                
+                                                                                                <div class="modal-body">
+                                                                                                    <div id="fileViewer"></div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
                                                                                     <div class="modal fade" id="fileModal1<?php echo $i; ?>" tabindex="-1" aria-labelledby="fileModalLabel" aria-hidden="true">
                                                                                         <div class="modal-dialog modal-dialog-centered modal-lg">
                                                                                             <div class="modal-content">

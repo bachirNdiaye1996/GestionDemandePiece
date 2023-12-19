@@ -12,7 +12,7 @@
 
 <?php
 
-    //session_start(); 
+    session_start(); 
 
     #$servername = "mysql-boulangerie.alwaysdata.net";
     $username = "root";
@@ -22,12 +22,15 @@
     $db = new PDO("mysql:host=localhost;dbname=$db_name;charset=utf8", $username, $password);
     $user = $_SESSION['nomcomplet'];
 
+    //if(isset($_GET['createDA'])){
+        $insertUser=$db->prepare("INSERT INTO `da` (`id`,`user`,`datecreation`) VALUES (NULL, ?, current_timestamp());");
+        $insertUser->execute(array($user));
+    
+        $idNewDA = $db->lastInsertId();
 
-    $insertUser=$db->prepare("INSERT INTO `da` (`id`,`user`,`datecreation`) VALUES (NULL, ?, current_timestamp());");
-    $insertUser->execute(array($user));
-
-    //sleep(3);
-    header('location:acueilAdmin.php');
-    //sleep(3);
-    //exit;       
+        //sleep(3);
+        header('location:acueilAdmin.php');
+        //sleep(3);
+        //exit; 
+    //}      
 ?>

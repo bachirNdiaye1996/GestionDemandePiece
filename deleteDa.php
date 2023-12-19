@@ -9,11 +9,9 @@
         include "connexion.php";
         if((isset($_GET['idda']) && $_SESSION['niveau']=="kemc") || (isset($_GET['idda']) && $_SESSION['niveau']=="admin")){
             $id = $_GET['idda'];
-            $sql = "UPDATE `da` set `actif`=0, datelivraison=current_timestamp() where id=$id";
+            $sql = "UPDATE `da` set `actifda`=1, datelivraison=current_timestamp() where id=$id";
             $db->query($sql);
-            $sql2 = "UPDATE `articles` SET `actif`=0 where idda=$id";
-            $db->query($sql2);
-            $sql2 = "UPDATE `articles` SET `actif`=0 where idda=$id";
+            $sql2 = "UPDATE `articles` SET `actif`=1 where idda=$id";
             $db->query($sql2);
             header("location:acueilAdmin.php?id=$id");
             exit;

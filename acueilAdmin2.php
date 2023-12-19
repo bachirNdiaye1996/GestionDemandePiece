@@ -28,16 +28,24 @@
 
 
     if(isset($_POST['valideLivraison'])){
-        if(!empty($_POST['quantites'])){
+        if(!empty($_POST['quantites']) & ($_POST['livraison'] <= ($_POST['quantites']))){
           //echo $_POST['quantites'];
+            $status="";
+          //echo $_POST['quantites'];
+            if($_POST['livraison'] < $_POST['quantites']){
+                $status="livraison partielle";
+            }elseif($_POST['livraison'] == $_POST['quantites']){
+                $status="Terminé";
+            }
             $quantites=htmlspecialchars($_POST['quantites']);
+            $transporteur=htmlspecialchars($_POST['transporteur']);
             $id=htmlspecialchars($_POST['id']);
             $user=htmlspecialchars($_POST['userLivrer']);
-            $livraison=htmlspecialchars($_POST['quantites']);
-            $req ="UPDATE articles SET livraisonPart=?, actifmang=2, userlivrer=? WHERE id=$id;"; 
+            $livraison=htmlspecialchars($_POST['livraison']);
+            $req ="UPDATE articles SET livraisonPart=?, statuspart=?, `datelivraison`=current_timestamp(), actifmang=2, userlivrer=?, idtransporteur=? WHERE id=$id;"; 
             //$db->query($req); 
             $reqtitre = $db->prepare($req);
-            $reqtitre->execute(array($livraison,$user));
+            $reqtitre->execute(array($livraison,$status,$user,$transporteur));
 
             //$messageD=$_SESSION['nomcomplet'].' vient de faire une livraison de frais et services.'.` Merci! <a href="http://localhost/GestionDemandePiece">Acceder ici.</a> `;
             $messageD = "
@@ -63,7 +71,7 @@
                 ";
             foreach($articlMails as $article){
                 if(($article['niveau'] == 'kemc') || ($article['niveau'] == 'admin')){
-                    envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle demande',$messageD);
+                    envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle livraison',$messageD);
                 }
             }
 
@@ -94,6 +102,7 @@
                             
             //-------Gestion fichier
             $namefile=htmlspecialchars($_FILES['file']['name']);
+            $demandeur=htmlspecialchars($_POST['demandeur']);
             $dateplanifie=htmlspecialchars($_POST['dateplanifie']);
             $quantites=htmlspecialchars($_POST['quantites']);
             $designations=htmlspecialchars($_POST['designations']);
@@ -103,41 +112,14 @@
             $user=htmlspecialchars($_POST['user']);
             $idda=htmlspecialchars($_POST['idda']);
             $livraison=htmlspecialchars($_POST['livraison']);
-            $insertUser=$db->prepare("INSERT INTO `articles` (`id`,`quantites`, `designations`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`,dateplanifie) VALUES (NULL, ?, ?, ?,?, current_timestamp(),?,?,?,?,?);')");
-            $insertUser->execute(array($quantites,$designations,$priorites,$status,$livraison,$user,$idda,$namefile,$dateplanifie));
+            $insertUser=$db->prepare("INSERT INTO `articles` (`id`,`quantites`, `designations`, `priorites`, `status`, `datecreation`, `livraison`,`user`,`idda`,`namefile`,`dateplanifie`,`iddemandeur`) VALUES (NULL, ?, ?, ?,?, current_timestamp(),?,?,?,?,?,?);')");
+            $insertUser->execute(array($quantites,$designations,$priorites,$status,$livraison,$user,$idda,$namefile,$dateplanifie,$demandeur));
             
             $idd=$_GET['id'];
             $insertUser=$db->prepare("UPDATE da SET  statusattente = statusattente + 1 where id=?");
             //$reqtitre = $db->prepare($sql);
             $insertUser->execute(array($idd));
 
-            //$messageD=$_SESSION['nomcomplet']." vient de créer une nouvelle commande de frais et service dans la DA00".$idda."."." Merci! <a href='http://localhost/GestionDemandePiece'>Acceder ici.</a> ";
-            $messageD = "
-            <html>
-            <head>
-            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-                <title>Nouveau compte</title>
-            </head>
-            <body>
-                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
-                    <p align='center'>
-                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
-                
-                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
-                
-                    <p align='center'>$_SESSION[nomcomplet] vient de créer une nouvelle commande de frais et service dans la DA00$idda</p>
-                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
-                    </p>
-                    <br>
-                </div>
-            </body>
-            </html>
-                ";
-            foreach($articlMails as $article){
-                if($article['niveau'] != 'kemc'){
-                    envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle demande',$messageD);
-                }
-            }
 
             if(isset($_GET['id'])){
                 $id = $_GET['id'];
@@ -236,7 +218,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `quantites`>=0 and `references`='';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `idda`=$id and `quantites`>=0 and `references`='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -251,7 +233,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `quantites`>=0  and `references`='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `idda`=$id and `quantites`>=0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -267,7 +249,7 @@
         //-----Fin
 
         // On détermine le nombre d'articles par page
-        $parPage = 7;
+        $parPage = 15;
 
         // On calcule le nombre de pages total
         $pages = ceil($nbArticles / $parPage);
@@ -276,7 +258,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `idda`=$id and `quantites`>=0 and `references`='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `idda`=$id and `quantites`>=0 and `references`='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -293,7 +275,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `statuspart`!='Terminé' and `idda`=$id and `actifmang`=0 and `references`='' and `actifkemb`=0 and `quantites`>=0;;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `idda`=$id and `actifmang`=0 and `references`='' and `actifkemb`=0 and `quantites`>=0;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -308,7 +290,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `statuspart`!='Terminé' and `actifmang`=0 and `references`='' and `idda`=$id and `quantites`>=0;";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `actifmang`=0 and `references`='' and `idda`=$id and `quantites`>=0;";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -324,7 +306,7 @@
         //-----Fin
 
         // On détermine le nombre d'articles par page
-        $parPage = 7;
+        $parPage = 15;
 
         // On calcule le nombre de pages total
         $pages = ceil($nbArticles / $parPage);
@@ -333,7 +315,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `statuspart`!='Terminé' and `actifmang`=0 and `idda`=$id and `references`='' and `quantites`>=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `actifmang`=0 and `idda`=$id and `references`='' and `quantites`>=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -381,7 +363,7 @@
         //-----Fin
 
         // On détermine le nombre d'articles par page
-        $parPage = 7;
+        $parPage = 15;
 
         // On calcule le nombre de pages total
         $pages = ceil($nbArticles / $parPage);
@@ -528,6 +510,8 @@
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item d-flex align-items-center" href="historique.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Historique commandes</span></a>
                             <div class="dropdown-divider"></div>
+                            <a class="dropdown-item d-flex align-items-center" href="recherchePieces.php"><i class="mdi mdi mdi-magnify text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Rechercher piéce</span></a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
                         </div>
                         <?php
@@ -540,8 +524,22 @@
                             <div class="p-3 border-bottom">
                                 <h6 class="mb-0">Maintenance</h6>
                             </div>
+                            <a class="dropdown-item d-flex align-items-center" href="recherchePieces.php"><i class="mdi mdi mdi-magnify text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Rechercher piéce</span></a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item d-flex align-items-center" href="<?php echo "updateUser.php?matricule=$_SESSION[matricule]";?>"><i class="mdi mdi-cog-outline text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Paramètres</span></a>
                             <div class="dropdown-divider"></div>
+                            <?php 
+                                if($_SESSION['niveau']=='kemc'){
+                            ?>
+                                <a class="dropdown-item d-flex align-items-center" href="ajouterDemandeur.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter demandeur</span></a>
+                                <div class="dropdown-divider"></div>
+                            <?php } ?>
+                            <?php 
+                                if($_SESSION['niveau']=='mang'){
+                            ?>
+                                <a class="dropdown-item d-flex align-items-center" href="ajouterTransporteur.php"><i class="mdi mdi mdi-account-plus text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Ajouter transporteur</span></a>
+                                <div class="dropdown-divider"></div>
+                            <?php } ?>
                             <a class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target=".add-new5" href=""><i class="mdi mdi mdi-bell-sleep text-muted font-size-16 align-middle me-2"></i> <span class="align-middle me-3">Signaler probléme</span></a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="index.php"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-2"></i> <span class="align-middle">Déconnexion</span></a>
@@ -659,91 +657,6 @@
             </div>           
         </div>
     </header>
-
-    <!-- ============================================================== -->
-    <!-- Start right Content here -->
-    <!-- ============================================================== -->
-    <div class="">
-        <div class="page-content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-3">
-                        <!-- start page title -->
-                        <div class="page-title-box align-self-center d-none d-md-block">
-                             <h4 class="page-title mb-0 pl-5 text-center mb-3">Profil Utilisateur</h4>
-                        </div>
-                        <!-- end page title -->
-                        <div class="card">
-                            <div class="card-body p-0">
-                                <div class="user-profile-img">
-                                    <img src="image/avatar-3.png"
-                                    class="profile-img profile-foreground-img rounded-top" style="height: 120px;"
-                                    alt="">
-                                    <div class="overlay-content rounded-top">
-                                            <div>
-                                                <div class="user-nav p-3">
-                                                    <div class="d-flex justify-content-end">
-                                                            
-                                                    </div>
-                                                </div>
-                                            </div>
-                                    </div>
-                                </div>
-                                <!-- end user-profile-img -->
-                                <div class="p-4 pt-0">
-                                <div class="mt-n5 position-relative text-center border-bottom pb-3">
-                                    <div class="profile-container">
-                                            <img id="profile-photo" src="image/avatar-3.png" alt="profile-photo" class="avatar-xl rounded-circle img-thumbnail profile-photo">
-                                                <div class="avatar-overlay">
-                                                    <input type="file" id="avatar-input" style="display: none;">
-                                                        <span class="profile-button" onclick="changeProfilePhoto()"><i class="bx bx-camera rounded-circle"></i></span>
-                                                    </div>
-                                                </div>                                           
-                                                <div class="mt-3">
-                                                   <h5 class="mb-1"><?php echo $_SESSION['nomcomplet'] ?></h5>
-                                                   <span class="badge badge-soft-success mb-0">L'administrateur</span>
-                                                </div>
-                                    </div>
-                                    <div class="table-responsive mt-3 border-bottom pb-3" style="font-family: montserrat;">
-                                            <table class="table align-middle table-sm table-nowrap table-borderless table-centered mb-0">
-                                                <tbody>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Matricule :</th>
-                                                        <td class="text-start fw-bold"><?php echo  $_SESSION['matricule'] ?></td><br>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Nom Complet :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['nomcomplet'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Email :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['email'] ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th class="text-start fw-bold">Niveau d'acces :</th>
-                                                        <td class="text-start fw-bold"><?php echo $_SESSION['niveau'] ?></td>
-                                                    </tr>
-                                                </tbody><!-- end tbody -->
-                                            </table>
-                                    </div> 
-                                </div>
-                            </div>
-                        </div>
-                    </div>      
-                    <div class="col-md-9">
-                            <div class="card">
-                                <div class="card-body">
-                                    <!-- Nav tabs -->
-                                    <ul class="nav nav-pills nav-justified card-header-pills" role="tablist">  
-                                        <li class="nav-item">
-                                            <a class="nav-link w-50 p-3 active" data-bs-toggle="tab" href="detail-agent.html#termine" role="tab">
-                                                <span class="fw-bold font-size-15">Frais et services en cours de la <?php echo "DA00".$id; ?></span> 
-                                            </a>
-                                        </li>                              
-                                    </ul>
-                                </div>
-                            </div>
-                <!-- Tab content -->
                 <div class="tab-content">
                                     <!-- end message -->
                                     <div class="tab-pane active" id="termine" role="tabpanel">
@@ -772,8 +685,13 @@
                                                                                         <th scope="col" class="fw-bold text-start">Livraison<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Restant<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Créée Par<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Transporteur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Demandeur<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date planification<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Date creation<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date livraison partielle<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Date livraison Approuvée<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
+                                                                                        <th scope="col" class="fw-bold text-start">Durée commande<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                         <th scope="col" class="fw-bold text-start">Options<button tabindex="-1" aria-label="Sort column ascending" title="Sort column ascending" class="gridjs-sort gridjs-sort-neutral"></button></th>
                                                                                     </tr>
                                                                                 </thead>
@@ -791,7 +709,7 @@
                                                                                         <td><?= $article['quantites'] ?></td>
                                                                                         <td><?= $article['designations'] ?></td>
                                                                                         <td><?= $article['priorites'] ?></td>
-                                                                                        <td><span class="<?php if($article['status'] != "Terminé"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
+                                                                                        <td><span class="<?php if($article['status'] == "livraison partielle"){echo "badge badge-soft-warning mb-0";}elseif($article['status'] == "Attente livraison"){echo "badge badge-soft-success mb-0";}else{echo "badge badge-soft-danger mb-0";}?>"><?= $article['status'] ?></span></td>
                                                                                             <?php 
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 1){
                                                                                             ?>
@@ -806,17 +724,81 @@
                                                                                         <td><?php echo $article['quantites']; ?></td>
                                                                                         <td><?= $article['user'] ?></td>
                                                                                         <td>
+                                                                                            <?php if($article['idtransporteur'] != 0){
+                                                                                            ?>
+                                                                                                <?php 
+                                                                                                    $idDemandeur = $article['idtransporteur'];
+                                                                                                    $sql2 = "SELECT * FROM `transporteur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomComplet']." (Mat:  ".$result2['matricule']." )";
+
+                                                                                                ?>
+                                                                                            <?php
+                                                                                                }else{echo "Attente livraison";}
+                                                                                            ?>
+                                                                                         </td>
+                                                                                        <td>
+                                                                                            <?php if($article['iddemandeur'] != 0){
+                                                                                            ?>
+                                                                                            <?php 
+                                                                                                    $idDemandeur = $article['iddemandeur'];
+                                                                                                    $sql2 = "SELECT * FROM `demandeur` where id=$idDemandeur;";
+                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                    
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                                    
+                                                                                                    // On récupère le nombre de demandeur
+                                                                                                    $result2 = $query2->fetch();
+                                                                                                    echo $result2['nomcomplet']." (Mat:  ".$result2['matricule']." )";
+                                                                                            ?>
+                                                                                            <?php
+                                                                                                }else{echo "Pas défini";}
+                                                                                            ?>
+                                                                                        </td>
+                                                                                        <td>
                                                                                             <?php if($article['dateplanifie'] != ''){echo $article['dateplanifie'];}else{?>
                                                                                                 <span class="badge badge-soft-success mb-0">Pas planifiée</span>
                                                                                             <?php }?>
                                                                                         </td>
                                                                                         <td><?= $article['datecreation'] ?></td>
+                                                                                        <td><span class="<?php if($article['datelivraison'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivraison'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivraison'];}?></span></td>
+                                                                                        <td><span class="<?php if($article['datelivapprouv'] == NULL){ echo "badge badge-soft-success mb-0";}?>"><?php if($article['datelivapprouv'] == NULL){ echo "Non encore livrée";}else{echo $article['datelivapprouv'];}?></span></td>
+                                                                                        <td><?php
+                                                                                            $now = time();
+                                                                                            $dateCreation = strtotime($article['datecreation']);
+                                                                                            $diff = $now - $dateCreation;
+                                                                                            if(floor($diff/(60*60*24)) == 0 && $article['datelivraison'] != NULL){echo "Moins de 24H";}else{echo floor($diff/(60*60*24))."  (JOURS)";}
+                                                                                        ?></td>
                                                                                         <td>
                                                                                         <?php 
                                                                                                 if($_SESSION['niveau']=='kemc'){
                                                                                             ?>
                                                                                                 <?php 
-                                                                                                    if($article['status'] !='Terminé'){
+                                                                                                    $id1 = $_GET['id'];                                                                        
+                                                                                    
+                                                                                                    $sql2 = "SELECT * FROM `da` where `id`=$id1;";
+                                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                        
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                        
+                                                                                                    // On récupère le nombre d'articles
+                                                                                                    $result2 = $query2->fetch();
+
+                                                                                                    if($article['status'] !='Terminé' && $result2['actifda'] == 0){
                                                                                                 ?>
                                                                                                     <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]"?>" data-bs-placement="top" title="Modifier frais et services" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
                                                                                                 <?php 
@@ -824,7 +806,26 @@
                                                                                                 ?>
                                                                                                 <input type="hidden" class="id" value="<?php echo $article['id']?>">
                                                                                                 <input type="hidden" class="idda" value="<?php echo $article['idda']?>">
+                                                                                                <?php 
+                                                                                                    $id1 = $_GET['id'];                                                                        
+                                                                                    
+                                                                                                    $sql2 = "SELECT * FROM `da` where `id`=$id1;";
+                                                                                                
+                                                                                                    // On prépare la requête
+                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                        
+                                                                                                    // On exécute
+                                                                                                    $query2->execute();
+                                                                                        
+                                                                                                    // On récupère le nombre d'articles
+                                                                                                    $result2 = $query2->fetch();
+
+                                                                                                    if($article['status'] !='Terminé' && $result2['actifda'] == 0){
+                                                                                                ?>
                                                                                                 <a href="javascript:void(0);" data-bs-placement="top" title="Suprimer la commande" class="suprimerCommande px-2 text-danger" data-bs-original-title="Suprimer la commande" aria-label="Suprimer la commande"><i class="bx bx-trash-alt font-size-18"></i></a>
+                                                                                                <?php 
+                                                                                                    }
+                                                                                                ?>
                                                                                                 <script>
                                                                                                     $(document).ready( function(){
                                                                                                         $('.suprimerCommande').click(function(e) {
@@ -869,9 +870,9 @@
                                                                                             ?>
                                                                                                 <a data-bs-toggle="modal" data-bs-target="#fileModal<?php echo $i; ?>" data-bs-url="" data-bs-placement="top" title="Afficher photo" class="px-2 text-primary" data-bs-original-title="Afficher photo" aria-label="Afficher photo"><i class="bx bx-file-blank font-size-18"></i></a>
                                                                                             <?php 
-                                                                                                if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0){
+                                                                                                if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0 && $article['status'] != "Terminé"){
                                                                                             ?>
-                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".add-newlivrer" class="btn btn-success"><i class=""></i>Livrer</a>
+                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".add-newlivrer<?php echo $i; ?>" class="btn btn-success"><i class=""></i>Livrer</a>
                                                                                             <?php
                                                                                             }
                                                                                             ?>
@@ -931,7 +932,7 @@
                                                                                         </div>
                                                                                     </div>
                                                                                     <!-- Fin modal PDF--> 
-                                                                                    <div class="modal fade add-newlivrer" id="add-newlivrer" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                                                                                    <div class="modal fade add-newlivrer<?php echo $i; ?>" id="add-newlivrer" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
                                                                                         <div class="modal-dialog modal-xl modal-dialog-centered">
                                                                                             <div class="modal-content">
                                                                                                 <div class="modal-header">
@@ -953,12 +954,6 @@
                                                                                                                     <input class="form-control" type="text" value="<?= $article['idda'] ?>" name="idda" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                                                                                                 </div>
                                                                                                             </div> 
-                                                                                                            <div class="col-md-6">
-                                                                                                                <div class="mb-3 text-start">
-                                                                                                                    <label class="form-label fw-bold" for="quantites">Quantites</label>
-                                                                                                                    <input class="form-control" type="text" value="" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
-                                                                                                                </div>
-                                                                                                            </div>
                                                                                                             <div class="col-md-6 visually-hidden">
                                                                                                                 <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="priorites">Status</label>
@@ -971,6 +966,12 @@
                                                                                                             </div>
                                                                                                             <div class="col-md-6 visually-hidden">
                                                                                                                 <div class="mb-3 text-start">
+                                                                                                                    <label class="form-label fw-bold" for="quantites">id</label>
+                                                                                                                    <input class="form-control" type="text" value="<?= $article['quantites'] ?>" name="quantites" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                                <div class="mb-3 text-start">
                                                                                                                     <label class="form-label fw-bold" for="user" ></label>
                                                                                                                     <input class="form-control " type="text" value="<?php
                                                                                                                         $array = explode(' ', $_SESSION['nomcomplet']);
@@ -978,12 +979,36 @@
                                                                                                                     ?>" name="userLivrer" id="example-date-input">
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                            <div class="col-md-6">
                                                                                                                 <div class="mb-3 text-start">
-                                                                                                                    <label class="form-label fw-bold" for="livraison">Livraison</label>
+                                                                                                                    <label class="form-label fw-bold" for="livraison">Quantites</label>
                                                                                                                     <input class="form-control" type="text" value="" name="livraison" id="example-date-input" placeholder="Noter le nombre de piéces à livrer">
                                                                                                                 </div>
-                                                                                                            </div>   
+                                                                                                            </div>
+                                                                                                            <div class="col-md-6">
+                                                                                                                <div class="mb-3 text-start">
+                                                                                                                    <label class="form-label fw-bold" for="priorites" >Transporteur</label>
+                                                                                                                    <?php
+                                                                                                                    $sql2 = "SELECT * FROM `transporteur` ;";
+                                                                            
+                                                                                                                    // On prépare la requête
+                                                                                                                    $query2 = $db->prepare($sql2);
+                                                                                                                    
+                                                                                                                    // On exécute
+                                                                                                                    $query2->execute();
+                                                                                                                    
+                                                                                                                    // On récupère le nombre de demandeur
+                                                                                                                    $result2 = $query2->fetchAll();
+
+                                                                                                                    ?>
+                                                                                                                    <select class="form-control" name="transporteur">
+                                                                                                                        <?php
+                                                                                                                        foreach($result2 as $article){ ?>
+                                                                                                                            <option value="<?php echo "$article[id]"; ?>"><?php echo "$article[nomComplet]"; ?></option>
+                                                                                                                        <?php } ?>
+                                                                                                                    </select>
+                                                                                                                </div>
+                                                                                                            </div>    
                                                                                                     </div>
                                                                                                         <div class="row mt-2">
                                                                                                             <div class="col-md-12 text-end">
@@ -1018,15 +1043,37 @@
                                                                             <!-- Bouton et pagnination--> 
                                                                             <div class="col-md-8 align-items-center">
                                                                                 <div class="d-flex gap-2 pt-4">
-                                                                                    <?php 
-                                                                                    if($_SESSION['niveau']=='kemc'){
+                                                                                <?php 
+                                                                                    $id1 = $_GET['id'];                                                                        
+                                                                                    
+                                                                                    $sql2 = "SELECT * FROM `da` where `id`=$id1;";
+                                                                                
+                                                                                    // On prépare la requête
+                                                                                    $query2 = $db->prepare($sql2);
+                                                                        
+                                                                                    // On exécute
+                                                                                    $query2->execute();
+                                                                        
+                                                                                    // On récupère le nombre d'articles
+                                                                                    $result2 = $query2->fetch();
+
+                                                                                    if($_SESSION['niveau']=='kemc' && $result2['actifda'] == 0){
                                                                                     ?>
-                                                                                        <a data-bs-toggle="modal" data-bs-target=".add-newDemande" class="btn bg-info w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter Demande</a>
+                                                                                        <a data-bs-toggle="modal" data-bs-target=".add-newDemande" class="btn bg-info w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter piéces</a>
                                                                                         <?php
                                                                                     } 
                                                                                     ?>
-                                                                                        <a href="<?php echo "acueiladmin1.php?id=$_GET[id]"; ?>" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
-                                                                                </div>
+<?php
+                                                                                    if(isset($_GET['recherche'])){
+                                                                                    ?>
+                                                                                        <a href="<?php echo "acueilAdmin1.php?id=$_GET[id]&recherche=true";?>" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                    <?php
+                                                                                        }else{ 
+                                                                                    ?>
+                                                                                        <a href="<?php echo "acueilAdmin1.php?id=$_GET[id]"; ?>" class="btn btn-danger  w-lg "><ion-icon name="arrow-undo-outline"></ion-icon>Retour</a>
+                                                                                    <?php
+                                                                                        } 
+                                                                                    ?>                                                                                </div>
                                                                                 
                                                                                 <div class="d-flex gap-2 pt-4">
                                                                                 </div>
@@ -1036,17 +1083,17 @@
                                                                                     <div class="float-sm-end">
                                                                                         <ul class="pagination mb-sm-0">
                                                                                             <li class="page-item <?= ($currentPage == 1) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage - 1 ?>" class="page-link">Précédente</a>
                                                                                             </li>
                                                                                             <?php for($page = 1; $page <= $pages; $page++): ?>
                                                                                             <!-- Lien vers chacune des pages (activé si on se trouve sur la page correspondante) -->
                                                                                             <li class="page-item <?= ($currentPage == $page) ? "active" : "" ?>">
-                                                                                                    <a href="?page=<?= $page ?>" class="page-link"><?= $page ?></a>
+                                                                                                    <a href="?id=<?= $_GET['id'] ?>&page=<?= $page ?>" class="page-link"><?= $page ?></a>
                                                                                             </li>
                                                                                             <?php endfor ?>
                                                                                             <!-- Lien vers la page suivante (désactivé si on se trouve sur la dernière page) -->
                                                                                             <li class="page-item <?= ($currentPage == $pages) ? "disabled" : "" ?>">
-                                                                                                <a href="?page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
+                                                                                                <a href="?id=<?= $_GET['id'] ?>&page=<?= $currentPage + 1 ?>" class="page-link">Suivante</a>
                                                                                             </li>
                                                                                         </ul>
                                                                                     </div>
@@ -1243,6 +1290,30 @@
                                             <div class="mb-3 text-start">
                                                 <label class="form-label fw-bold" for="planifie" >Date planifiée</label>
                                                 <input class="form-control planifie" type="date" name="dateplanifie" id="example">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3 text-start">
+                                                <label class="form-label fw-bold" for="priorites" >Demandeur</label>
+                                                <?php
+                                                $sql2 = "SELECT * FROM `demandeur` ;";
+        
+                                                // On prépare la requête
+                                                $query2 = $db->prepare($sql2);
+                                                
+                                                // On exécute
+                                                $query2->execute();
+                                                
+                                                // On récupère le nombre de demandeur
+                                                $result2 = $query2->fetchAll();
+
+                                                ?>
+                                                <select class="form-control" name="demandeur">
+                                                    <?php
+                                                    foreach($result2 as $article){ ?>
+                                                        <option value="<?php echo "$article[id]"; ?>"><?php echo "$article[nomcomplet]"; ?></option>
+                                                    <?php } ?>
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-md-6 visually-hidden">

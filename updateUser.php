@@ -238,7 +238,7 @@
         <input type="hidden" name="id" value="<?php echo $id; ?>" class="form-control"> <br>
           <div class="groupe">
             <label>Nom complet :</label>
-            <input type="text" autocomplete="off" value="<?php echo $nomcomplet; ?>" placeholder="Entrer le nom complet de l'utilisateur" name="nomcomplet"/>
+            <input type="text" style="width:400px;" autocomplete="off" value="<?php echo $nomcomplet; ?>" placeholder="Entrer le nom complet de l'utilisateur" name="nomcomplet"/>
             <i class="fas fa-user"></i>
           </div>
           <div class="groupe">

@@ -47,6 +47,8 @@
             
             <!-- Style Css-->
             <link href="css/style.css" rel="stylesheet" type="text/css" />
+            <link rel="shortcut icon" href="image/iconOnglet.png" />
+
           <style>
             /* Compte utilisateur */
             @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap");
