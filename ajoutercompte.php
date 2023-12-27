@@ -23,6 +23,29 @@
     //   exit;
     // }
 
+    include 'mail.php';
+    $messageD = "
+    <html>
+    <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+        <title>Nouveau compte</title>
+    </head>
+    <body>
+        <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+            <p align='center'>
+            <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+        
+            <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+        
+            <p align='center'>$_SESSION[nomcomplet] vient de faire une livraison de piéces pour la DA00$_POST[idda].</p>
+            <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+            </p>
+            <br>
+        </div>
+    </body>
+    </html>
+        ";
+            envoie_mail($article['nomcomplet'],$article['email'],'Nouvelle livraison',$messageD);
     
 ?>
 

@@ -8,7 +8,7 @@ if(!$_SESSION['niveau']){
     echo "<h1 style='color:red; text-align: center'>Error :</h1>";
     echo "<h2 style='color:red; margin-left:10px'>Sessions expurées!</h2>";
     echo "<h2 style='color:red; margin-left:10px'>Assurez vous que les fenetres ne sont pas ouvertes plusieures fois!</h2>";
-    echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://10.10.10.5/GestionDemandePiece'>Acceder ici.</a></h2>";
+    echo "<h2 style='color:red; margin-left:10px'>Veillez vous reconnecter svp! <a style='color:black;' href='http://localhost/GestionDemandePiece'>Acceder ici.</a></h2>";
     echo "</div>";
     return 0;
 }
@@ -50,22 +50,48 @@ if(isset($_POST['valideDAEmail'])){
 
     if(!empty($_POST['email']) || !empty($_POST['email1']) || !empty($_POST['email2']) || !empty($_POST['email3']) || !empty($_POST['email4']) ||
         !empty($_POST['email5']) || !empty($_POST['email6']) || !empty($_POST['email7']) || !empty($_POST['email8']) || !empty($_POST['email9'])){
-
+        
         $id = $_POST['id'];
+        //-------------------
+        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `idda`= '$id' and `quantites`>=0  ORDER BY `id`;";
+
+        // On prépare la requête
+        $query = $db->prepare($sql);
+
+        // On exécute
+        $query->execute();
+
+        // On récupère les valeurs dans un tableau associatif
+        $articlesMail = $query->fetchAll();
+
+
         $sql = "UPDATE `da` set `actifda`=1, datecreation=current_timestamp() where id=$id";
         $db->query($sql);
         $sql2 = "UPDATE `articles` SET `actif`=1 where idda=$id";
-        $db->query($sql2);        
+        $db->query($sql2); 
+               
+                    
+        if(!empty($_POST['email'])){
             $email=$_POST['email'];
-            $email1=$_POST['email1'];  
+        }if(!empty($_POST['email1'])){
+            $email1=$_POST['email1'];
+        }if(!empty($_POST['email2'])){
             $email2=$_POST['email2'];
-            $email3=$_POST['email3']; 
+        }if(!empty($_POST['email3'])){
+            $email3=$_POST['email3'];
+        }if(!empty($_POST['email4'])){
             $email4=$_POST['email4'];
-            $email5=$_POST['email5']; 
+        }if(!empty($_POST['email5'])){
+            $email5=$_POST['email5'];
+        }if(!empty($_POST['email6'])){
             $email6=$_POST['email6'];
-            $email7=$_POST['email7']; 
+        }if(!empty($_POST['email7'])){
+            $email7=$_POST['email7'];
+        }if(!empty($_POST['email8'])){
             $email8=$_POST['email8'];
-            $email9=$_POST['email9'];                   
+        }if(!empty($_POST['email9'])){
+            $email9=$_POST['email9']; 
+        }                  
             //$messageD=$_SESSION['nomcomplet'].' vient de creer une nouvelle DA de demande de piece.';
             $messageD = "
                 <html>
@@ -80,9 +106,40 @@ if(isset($_POST['valideDAEmail'])){
                     
                         <h3 align='center' style='color:#0000FF;'>METAL AFRIQUE</h3>
                     
-                        <p align='center'>Nouvelle DA n° 00$id envoyée.</p>
+                        <p align='center'>Nouvelle DA numero DA00$id envoyee.</p>
+                        <h4 align='center'>Voici la liste des pieces creees dans cette DA.</h4>
                         </p>
                         <br>
+                        <table style='border-collapse: separate;  margin-bottom: 50px; border: 1px solid white; border-spacing : 7px;  margin-left: auto; margin-right: auto;'>
+                            <thead>
+                                <tr>  
+                                    <th scope='col' style=' margin:6px;'>Nom DA</th>                                                                                     
+                                    <th scope='col' style=' margin:6px;'>Quantites</th>
+                                    <th scope='col' style=' margin:6px;'>Designations</th>
+                                    <th scope='col' style=' margin:6px;'>References</th>
+                                    <th scope='col' style=' margin:6px;'>Priorites</th>
+                                    <th scope='col' style=' margin:6px;'>Date planification</th>
+                                    <th scope='col' style=' margin:6px;'>Date creation</th>
+                                </tr>
+                            </thead>
+                                <tbody>";
+                                        foreach($articlesMail as $article){
+                                    $messageD.="
+                                    <tr>
+                                        <td style=' color:black; text-align: center;'>DA00.$article[idda]</td>
+                                        <td style=' color:black; text-align: center;'>$article[quantites]</td>
+                                        <td style=' color:black;text-align: center;'>$article[designations]</td>
+                                        <td style=' color:black;text-align: center;'>$article[references]</td>
+                                        <td style=' color:black; text-align: center;'>$article[priorites]</td>
+                                        <td style=' color:black; text-align: center;'>
+                                            $article[dateplanifie]
+                                        </td>
+                                        <td style=' color:black; text-align: center;'>$article[datecreation]</td>
+                                    </tr>";
+                                        }
+                                    $messageD.="
+                                </tbody>
+                            </table>
                     </div>
                 </body>
                 </html>
@@ -978,7 +1035,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                             </p>
                                         </div>
                                         <div class="form-check"> 
-                                            <input class="form-check-input" type="checkbox" style="margin-left: 10px; margin-right: 50px; width: 35px; height: 35px" name="email8" value="adaher@metalafrique.com" id="flexCheckChecked">
+                                            <input class="form-check-input" type="checkbox" style="margin-left: 10px; margin-right: 50px; width: 35px; height: 35px" name="email8" value="mouhamadoulbachir2@gmail.com" id="flexCheckChecked">
                                             <p class="form-check-label text-start" style="font-size: 25px;" for="flexCheckDefault">
                                                 Ali DAHER
                                             </p>
@@ -1042,7 +1099,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                                                                                                         //data: str,
                                                                                                                         success: function( response ) {
                                                                                                                             Swal.fire({
-                                                                                                                                text: 'DA terminée avec success!',
+                                                                                                                                text: 'DA créée avec success!',
                                                                                                                                 icon: 'success',
                                                                                                                                 timer: 3000,
                                                                                                                                 showConfirmButton: false,

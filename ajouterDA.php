@@ -29,7 +29,7 @@
         $idNewDA = $db->lastInsertId();
 
         //sleep(3);
-        header('location:acueilAdmin.php');
+        //header('location:acueilAdmin.php');
         //sleep(3);
         //exit; 
     //}      

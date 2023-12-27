@@ -70,8 +70,8 @@
       header("location:acueilAdmin.php");
       exit;
     }
-    $matricule = $_GET['matricule'];
-    $sql = "select * from utilisateur where matricule=$matricule";
+    $matricule = "$_GET[matricule]";
+    $sql = "select * from utilisateur where matricule='$matricule'";
     $result = $db->query($sql);
     $row = $result->fetch();
     while(!$row){
