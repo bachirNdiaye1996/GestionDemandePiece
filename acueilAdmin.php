@@ -61,7 +61,7 @@ if(isset($_POST['valideDAEmail'])){
         // On exécute
         $query->execute();
 
-        // On récupère les valeurs dans un tableau associatif
+        // On récupère les valeurs dans un tableau associatif 
         $articlesMail = $query->fetchAll();
 
 
@@ -454,7 +454,7 @@ if($_SESSION['niveau']=="kemc"){
 
 
 // ----------- On definie le nombre de commande a approuvées
-$sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
+$sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1 and `livraisonrejet`=0 and `references`!=''";
 // On prépare la requête
 $queryartA = $db->prepare($sqlartA);
 
@@ -467,7 +467,7 @@ $resultartA = $queryartA->fetch();
 $nbartA = (int) $resultartA['nb_articles'];
 
 // ----------- On definie le nombre de commande a approuvées
-$sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2";
+$sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2 and `livraisonrejet`=0 and `references`=''";
 // On prépare la requête
 $queryartA1 = $db->prepare($sqlartA1);
 
@@ -478,6 +478,36 @@ $queryartA1->execute();
 $resultartA1 = $queryartA1->fetch();
 
 $nbartADemande = (int) $resultartA1['nb_articles'];
+
+
+//*************
+// ----------- On definie le nombre de commande a approuvées
+$sqlartR = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `livraisonrejet`=1 and `references`!=''";
+// On prépare la requête
+$queryartR = $db->prepare($sqlartR);
+
+// On exécute
+$queryartR->execute();
+
+// On récupère le nombre d'articles
+$resultartR = $queryartR->fetch();
+
+$nbartR = (int) $resultartR['nb_articles'];
+
+// ----------- On definie le nombre de commande a approuvées
+$sqlartR1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `livraisonrejet`=1 and `references`=''";
+// On prépare la requête
+$queryartR1 = $db->prepare($sqlartR1);
+
+// On exécute
+$queryartR1->execute();
+
+// On récupère le nombre d'articles
+$resultartR1 = $queryartR1->fetch();
+
+$nbartRDemande = (int) $resultartR1['nb_articles'];
+/// *******/
+
 
 // ----------- On definie le nombre de demande
 $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `status`!='Terminé' and `quantites`>=0  and `references`='';";
@@ -779,6 +809,31 @@ $nbADemande = (int) $resultd['nb_articles'];
                     }
                 ?>
 
+                <?php 
+                    if(($_SESSION['niveau'] !='mang' && $nbartR) || ($_SESSION['niveau'] !='mang' && $nbartRDemande)){
+                    ?>
+                    <div class="col-xl-3 col-md-6">
+                        <a href="rejetPiece.php">
+                            <div class="card border-left-warning shadow h-100 py-2 bg-danger bg-gradient" id="clignoter2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Commandes rejetées</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Nombres : <?php echo ($nbartRDemande + $nbartR);?></div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div> 
+                <?php
+                    }
+                ?>
+
                 <!-- Earnings (Monthly) Card Example -->
                 <?php 
                     if(($_SESSION['niveau']=='kemc' && $nbartA) || ($_SESSION['niveau']=='kemc' && $nbartADemande)){
@@ -1041,7 +1096,7 @@ $nbADemande = (int) $resultd['nb_articles'];
                                             </p>
                                         </div>
                                         <div class="form-check"> 
-                                            <input class="form-check-input" type="checkbox" style="margin-left: 10px; margin-right: 50px; width: 35px; height: 35px" name="email9" value="mbennani@metalafrique.com" id="flexCheckChecked">
+                                            <input class="form-check-input" type="checkbox" style="margin-left: 10px; margin-right: 50px; width: 35px; height: 35px" name="email9" value="mouhamadoulbachir2@gmail.com" id="flexCheckChecked">
                                             <p class="form-check-label text-start" style="font-size: 25px;" for="flexCheckDefault">
                                                 Bennan
                                             </p>

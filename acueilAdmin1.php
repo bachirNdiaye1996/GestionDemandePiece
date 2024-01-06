@@ -85,6 +85,58 @@
         }    
     }
 
+    $mess2="";
+    if(isset($_POST['rejetLivraison'])){
+        //print_r($_POST);
+        if(!empty($_POST['motifrejet'])){  
+            $id=htmlspecialchars($_POST['id']);
+            $user=htmlspecialchars($_POST['userLivrer']);
+            $livraison=htmlspecialchars($_POST['motifrejet']);
+            $req ="UPDATE articles SET livraisonrejet=1, userlivrer=? WHERE id=$id;"; 
+            //$db->query($req); 
+            $reqtitre = $db->prepare($req);
+            $reqtitre->execute(array($user));
+
+            //$messageD=$_SESSION['nomcomplet'].' vient de faire une livraison de piéces pour la DA00'.$_POST['idda'].' Veillez verifier svp! '.'<a href="http://localhost/GestionDemandePiece">Acceder ici.</a>';
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de rejeter la commande de piéces dans la DA00$_POST[idda] pour les motifs suivants :</p>
+                    <p align='center' style='color:red'>$_POST[motifrejet]</p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if(($article['niveau'] == 'kemc') || ($article['niveau'] == 'admin')){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Rejeter commande',$messageD);
+                }
+            }
+            
+            if(isset($_GET['id'])){
+                $id = $_GET['id'];
+                header("location:acueilAdmin1.php?id=$id");
+                exit;
+            }
+        }else{
+          $mess2 = "error";
+        }    
+    }
+    
+
     if(isset($_POST['valideArticle'])){
         if(!empty($_POST['description']) && !empty($_POST['priorites'])){
             //print_r('test');
@@ -240,7 +292,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `quantites`>=0 and `idda`=$id and `references`!='';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `quantites`>=0 and `idda`=$id and `references`!='' and livraisonrejet=0;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -255,7 +307,7 @@
 
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `idda`=$id and `quantites`>=0  and `references`='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actifkemb`= 0 and `idda`=$id and `quantites`>=0  and `references`='' and livraisonrejet=0;";
         // On prépare la requête
         $queryd = $db->prepare($sqld);
 
@@ -279,7 +331,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `idda`= '$id' and `quantites`>=0 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actifkemb`= 0 and `idda`= '$id' and `quantites`>=0 and `references`!='' and livraisonrejet=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -296,7 +348,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`=$id and `actifmang`=0 and `actifkemb`=0 and `references`!='';";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`=$id and `actifmang`=0 and `actifkemb`=0 and livraisonrejet=0 and `references`!='';";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -310,7 +362,7 @@
         $nbArticles = (int) $result['nb_articles'];
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `actifmang`= 0 and `idda`=$id and `quantites`>=0  and `references`='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `actifmang`= 0 and livraisonrejet=0 and `idda`=$id and `quantites`>=0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -335,7 +387,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`= '$id' and `actifmang`=0 and `actifkemb`=0 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `quantites`>=0 and `idda`= '$id' and `actifmang`=0 and livraisonrejet=0 and `actifkemb`=0 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -353,7 +405,7 @@
         $id = $_GET['id'];
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and `quantites`>=0 and `references`!='' and `idda`=$id;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifkemb`= 0 and livraisonrejet=0 and `quantites`>=0 and `references`!='' and `idda`=$id;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -367,7 +419,7 @@
         $nbArticles = (int) $result['nb_articles'];
         //Pour demande
 
-        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and `actifkemb`= 0 and `idda`=$id and `quantites`>0  and `references`='';";
+        $sqld = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `status`!='Terminé' and livraisonrejet=0 and `actifkemb`= 0 and `idda`=$id and `quantites`>0  and `references`='';";
         
         // On prépare la requête
         $queryd = $db->prepare($sqld);
@@ -392,7 +444,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `idda`= '$id' and `actifkemb`= 0 and `quantites`>=0 and `actif`=1 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `idda`= '$id' and `actifkemb`= 0 and `quantites`>=0 and livraisonrejet=0 and `actif`=1 and `references`!='' ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -411,7 +463,7 @@
     //-----------------------DA
 
     // ----------- On definie le nombre de commande a approuvées
-    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1";
+    $sqlartA = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=1 and `livraisonrejet`=0";
     // On prépare la requête
     $queryartA = $db->prepare($sqlartA);
 
@@ -924,7 +976,7 @@
 
                                                                                                     if($article['status'] !='Terminé' && $result2['actifda'] == 0){
                                                                                                 ?>
-                                                                                                    <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]"?>" data-bs-placement="top" title="Modifier commande" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
+                                                                                                    <a href="<?php echo "updatePiece.php?id=$article[id]&idda=$article[idda]&mail=0"?>" data-bs-placement="top" title="Modifier commande" class="px-2 text-primary" data-bs-original-title="Modifier commande" aria-label="Modifier commande"><i class="bx bx-pencil font-size-18"></i></a>
                                                                                                 <?php 
                                                                                                     }
                                                                                                 ?>
@@ -995,6 +1047,7 @@
                                                                                                 if($_SESSION['niveau'] == 'mang' && $article['rege'] == 0 && $article['status'] != "Terminé"){
                                                                                             ?>
                                                                                                 <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".add-newlivrer<?php echo $i; ?>" class="btn btn-success"><i class=""></i>Livrer</a>
+                                                                                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target=".rejetLivraison<?php echo $i; ?>" class="btn btn-danger"><i class=""></i>Rejeter</a>
                                                                                             <?php
                                                                                             }
                                                                                             ?>
@@ -1098,8 +1151,8 @@
                                                                                                                     ?>
                                                                                                                     <select class="form-control" name="transporteur">
                                                                                                                         <?php
-                                                                                                                        foreach($result2 as $article){ ?>
-                                                                                                                            <option value="<?php echo "$article[id]"; ?>"><?php echo "$article[nomComplet]"; ?></option>
+                                                                                                                        foreach($result2 as $transporteur){ ?>
+                                                                                                                            <option value="<?php echo "$transporteur[id]"; ?>"><?php echo "$transporteur[nomComplet]"; ?></option>
                                                                                                                         <?php } ?>
                                                                                                                     </select>
                                                                                                                 </div>
@@ -1128,7 +1181,67 @@
                                                                                                 </div>
                                                                                             </div><!-- /.modal-content -->
                                                                                         </div><!-- /.modal-dialog -->
-                                                                                    </div><!-- /.modal -->  
+                                                                                    </div><!-- /.modal --> 
+                                                                                    <div class="modal fade rejetLivraison<?php echo $i; ?>" id="" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog modal-xl modal-dialog-centered">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="myExtraLargeModalLabel">Rejeter la livraison</h5>
+                                                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                                </div>
+                                                                                                <div class="modal-body">
+                                                                                                    <form action="#" method="POST">
+                                                                                                        <div class="row">
+                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                                <div class="mb-3 ">
+                                                                                                                    <input class="form-control" type="text" value="<?= $article['id'] ?>" name="id" placeholder="Noter le nombre de piéces à livrer">
+                                                                                                                </div>
+                                                                                                            </div> 
+                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                                <div class="mb-3 ">
+                                                                                                                    <input class="form-control" type="text" value="<?= $article['idda'] ?>" name="idda" placeholder="Noter le nombre de piéces à livrer">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-md-6 visually-hidden">
+                                                                                                                <div class="mb-3 text-start">
+                                                                                                                    <label class="form-label fw-bold" for="user" ></label>
+                                                                                                                    <input class="form-control " type="text" value="<?php
+                                                                                                                        $array = explode(' ', $_SESSION['nomcomplet']);
+                                                                                                                        echo $array[0];
+                                                                                                                    ?>" name="userLivrer" id="example-date-input">
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            <div class="col-md-6">
+                                                                                                                <div class="mb-3 text-start">
+                                                                                                                    <label class="form-label fw-bold" for="livraison">Motif du rejet</label>
+                                                                                                                    <input class="form-control" type="text" value="" name="motifrejet" placeholder="Mettez en quelques mots, le motif du rejet.">
+                                                                                                                </div>
+                                                                                                            </div>  
+                                                                                                        </div>
+                                                                                                        <div class="row mt-2">
+                                                                                                            <div class="col-md-12 text-end">
+                                                                                                            <?php if($mess2 == "error"){ ?> 
+                                                                                                                <script>    Swal.fire({
+                                                                                                                  text: 'Veillez entrer le motif svp!',
+                                                                                                                  icon: 'error',
+                                                                                                                  timer: 3500,
+                                                                                                                  showConfirmButton: false,
+                                                                                                                  });
+                                                                                                                </script> 
+                                                                                                              <?php } 
+                                                                                                            ?>
+                                                                                                                    <div class="d-flex gap-2 pt-4">                           
+                                                                                                                        <a href="#"><input class="btn btn-danger  w-lg bouton" name="" type="submit" value="Annuler"></a>
+                                                                                                                        <input class="btn btn-success  w-lg bouton" name="rejetLivraison" type="submit" value="Rejeter">
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </form>                             
+                                                                                                </div>
+                                                                                            </div><!-- /.modal-content -->
+                                                                                        </div><!-- /.modal-dialog -->
+                                                                                    </div><!-- /.modal --> 
                                                                                     <?php
                                                                                             }
                                                                                         //}
@@ -1264,8 +1377,8 @@
                                                 ?>
                                                 <select class="form-control" name="demandeur">
                                                     <?php
-                                                    foreach($result2 as $article){ ?>
-                                                        <option value="<?php echo "$article[id]"; ?>"><?php echo "$article[nomcomplet]"; ?></option>
+                                                    foreach($result2 as $demandeur){ ?>
+                                                        <option value="<?php echo "$demandeur[id]"; ?>"><?php echo "$demandeur[nomcomplet]"; ?></option>
                                                     <?php } ?>
                                                 </select>
                                             </div>

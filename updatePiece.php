@@ -1,6 +1,7 @@
 <?php
 
 include "connexion.php";
+include 'mail.php';
 $quantites="";
 $designations="";
 $reference="";
@@ -10,12 +11,12 @@ $namefile="";
 
 
 
-
 $error="";
 $success="";
 $idda="";
 $EstDemande=0;
 //echo $EstDemande;
+//print_r($_POST);
 
 if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
   if(!isset($_GET['id'])){
@@ -29,7 +30,7 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
     $row = $result->fetch();
     if($row['references'] == ""){
         $EstDemande = 1;
-        $designations=$row['designations'];
+        $designations=$row['designations'];        
     }else{
         $designations="DESI :".$row['designations']."REFE :".$row['references'];
     }
@@ -71,11 +72,49 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $reference=$Chaine[1];
         $designations2=explode("DESI :",$Chaine[0],2);
         $designations=$designations2[1];
-        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
-        //$result = $db->query($sql); 
-        $sth = $db->prepare($sql);    
-        $sth->execute(array($dateplanifie));
-         
+
+        if(stristr($designations1,"REFE :") === FALSE){
+            $designations=$_POST['designations'];      
+            $sql = "UPDATE `articles` SET `livraisonrejet`=0, `quantites`='$quantites',`references`='', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
+            //$result = $db->query($sql); 
+            $sth = $db->prepare($sql);    
+            $sth->execute(array($dateplanifie));
+        }else{   
+            $designations=$designations2[1];
+            $sql = "UPDATE `articles` SET `livraisonrejet`=0, `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
+            //$result = $db->query($sql); 
+            $sth = $db->prepare($sql);    
+            $sth->execute(array($dateplanifie));
+        }
+
+        if($_POST['mailModif'] == 1){
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de modifier la commande de piéces qui etait rejetée dans la DA00$_GET[idda]</p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if(($article['niveau'] != 'kemc')){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Modification commande',$messageD);
+                }
+            }
+        }
         header("location: acueilAdmin1.php?id=$idda");
         exit; 
     }
@@ -87,14 +126,55 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
         $priorites=$_POST['priorites'];
         $quantites=$_POST['quantites'];
         $designations=$_POST['designations'];
-        $sql = "UPDATE `articles` SET `quantites`='$quantites', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
-        //$result = $db->query($sql); 
-        $sth = $db->prepare($sql);    
-        $sth->execute(array($dateplanifie));
 
-        header("location: acueilAdmin2.php?id=$idda");
-        exit; 
+        if(stristr($designations,"REFE :") === FALSE){     
+            $designations=$_POST['designations'];      
+            $sql = "UPDATE `articles` SET `livraisonrejet`=0, `quantites`='$quantites', `designations`='$designations', `priorites`='$priorites',`dateplanifie`=?,  `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
+            //$result = $db->query($sql); 
+            $sth = $db->prepare($sql);    
+            $sth->execute(array($dateplanifie));
+        }else{   
+            $Chaine=explode("REFE :",$designations,2);
+            $reference=$Chaine[1];
+            $designations2=explode("DESI :",$Chaine[0],2);
+            $designations=$designations2[1];
+            $sql = "UPDATE `articles` SET `livraisonrejet`=0, `quantites`='$quantites', `designations`='$designations', `references`='$reference', `priorites`='$priorites',`dateplanifie`=?, `namefile`='$namefile',`iddemandeur`='$demandeur' where id=$id;";
+            //$result = $db->query($sql); 
+            $sth = $db->prepare($sql);    
+            $sth->execute(array($dateplanifie));
+        }
+
+        if($_POST['mailModif'] == 1){
+            $messageD = "
+            <html>
+            <head>
+            <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+                <title>Nouveau compte</title>
+            </head>
+            <body>
+                <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                    <p align='center'>
+                    <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
+                
+                    <h3 align='center'>METAL AFRIQUE EMAIL</h3>
+                
+                    <p align='center'>$_SESSION[nomcomplet] vient de modifier la commande de frais et service qui etait rejetée dans la DA00$_GET[idda]</p>
+                    <p align='center'><a href='http://localhost/GestionDemandePiece'>Cliquez ici pour y acceder.</a></p>
+                    </p>
+                    <br>
+                </div>
+            </body>
+            </html>
+                ";
+            foreach($articlMails as $article){
+                if(($article['niveau'] != 'kemc')){
+                    envoie_mail($article['nomcomplet'],$article['email'],'Modification commande',$messageD);
+                }
+            }
+        }
     } 
+    header("location: acueilAdmin2.php?id=$idda");
+    exit; 
 }
 
 ?>
@@ -245,9 +325,15 @@ if($_SERVER["REQUEST_METHOD"]=='GET' && ($_SESSION['niveau'] == 'kemc') ){
                                             <div class="col-md-6 visually-hidden">
                                                 <div class="mb-3 text-start">
                                                     <label class="form-label fw-bold" for="livraison">Livraison</label>
-                                                    <input class="form-control" type="text" value="0" name="livraison" id="example-d" placeholder="Noter la livraison">
+                                                    <input class="form-control" type="text" value="0" name="livraison">
                                                 </div>
-                                            </div>   
+                                            </div>  
+                                            <div class="col-md-6 visually-hidden">
+                                                <div class="mb-3 text-start">
+                                                    <label class="form-label fw-bold" for="livraison"></label>
+                                                    <input class="form-control" type="text" value="<?php echo "$_GET[mail]"; ?>" name="mailModif">
+                                                </div>
+                                            </div>  
                                     </div>
                                         <div class="row">
                                             <div class="col-md-8">

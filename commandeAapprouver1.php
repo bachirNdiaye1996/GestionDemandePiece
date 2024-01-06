@@ -52,7 +52,7 @@
     if($_SESSION['niveau']=='kemc'){
 
         // ---------------On détermine le nombre total d'articles
-        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=2;";
+        $sql = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`= 1 and `actifmang`=2 and `livraisonrejet`=0;";
         
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -75,7 +75,7 @@
         $premier = ($currentPage * $parPage) - $parPage;
 
         //-------------------
-        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=2 ORDER BY `id` DESC LIMIT :premier, :parpage;";
+        $sql = "SELECT * FROM `articles` where `actif`= 1 and `actifmang`=2 and `livraisonrejet`=0 ORDER BY `id` DESC LIMIT :premier, :parpage;";
 
         // On prépare la requête
         $query = $db->prepare($sql);
@@ -94,7 +94,7 @@
 
     // ----------- On definie le nombre de commande a approuvées
     // ----------- On definie le nombre de commande a approuvées
-    $sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2";
+    $sqlartA1 = "SELECT COUNT(*) AS nb_articles FROM `articles` where `actif`=1 and `actifmang`=2 and `livraisonrejet`=0";
     // On prépare la requête
     $queryartA1 = $db->prepare($sqlartA1);
 
