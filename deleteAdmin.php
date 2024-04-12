@@ -17,7 +17,11 @@
             
             $sql = "UPDATE `articles` SET `actifkemb`=1 where id=$id";
             $db->query($sql);
-    
+
+            //Pour suprimer l'incrementation dans les DA
+            $sql = "UPDATE `da` SET  `statusattente` = statusattente - 1 where id=$idda";
+            $db->query($sql);
+        
             header("location:acueilAdmin1.php?id=$idda");
             exit;
         }
@@ -266,7 +270,7 @@
             <html>
             <head>
             <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-                <title>Nouveau compte</title>
+                <title>Livraison rejetee</title>
             </head>
             <body>
                 <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>

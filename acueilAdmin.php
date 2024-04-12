@@ -101,6 +101,7 @@ if(isset($_POST['valideDAEmail'])){
                 </head>
                 <body>
                     <div id='email-wrap' style='background: #33ECFF;color: #FFF; border-radius: 10px;'>
+                        <br>
                         <p align='center'>
                         <img src='https://bootstrapemail.com/img/icons/logo.png' alt='' width=72 height=72>
                     
@@ -140,31 +141,33 @@ if(isset($_POST['valideDAEmail'])){
                                     $messageD.="
                                 </tbody>
                             </table>
+                        <br>
+                        <br>
                     </div>
                 </body>
                 </html>
                     ";
             //foreach($articlMails as $article){
                 if(!empty($_POST['email'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email,'nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email1'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email1,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email1,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email2'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email2,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email2,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email3'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email3,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email3,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email4'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email4,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email4,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email5'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email5,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email5,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email6'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email6,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email6,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email7'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email7,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email7,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email8'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email8,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email8,'Nouvelle DA00'.$id,$messageD);
                 }if(!empty($_POST['email9'])){
-                    envoie_mail($_SESSION['nomcomplet'],$email9,'Nouvelle DA',$messageD);
+                    envoie_mail($_SESSION['nomcomplet'],$email9,'Nouvelle DA00'.$id,$messageD);
                 }
             //}
         

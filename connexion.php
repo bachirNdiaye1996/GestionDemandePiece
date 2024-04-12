@@ -11,8 +11,8 @@
     if(isset($_POST['valide'])){
         if(!empty($_POST['username']) && !empty($_POST['password'])){
             $user=htmlspecialchars($_POST['username']);
-            $password=sha1($_POST['password']);
-            #$password=$_POST['password'];
+            //$password=sha1($_POST['password']);
+            $password=$_POST['password'];
             $recupeUser=$db->prepare('select * from utilisateur where matricule=? and password=?');
             $recupeUser->execute(array($user,$password));
             
@@ -91,5 +91,3 @@
     $Utilisateur = $User1->fetchAll();
     echo $Utilisateur['username'];*/
 ?>
-
-

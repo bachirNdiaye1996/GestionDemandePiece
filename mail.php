@@ -39,7 +39,8 @@ function envoie_mail($from_name,$from_email,$subject,$message){
     $mail->Port       = 465;
     $mail->setFrom($from_email, $from_name);
     $mail->addAddress($from_email);
-    $mail->isHTML(true);                                 
+    $mail->isHTML(true);     
+    $mail->CharSet = "UTF-8";                            
     $mail->Subject = $subject;
     $mail->Body    = $message;
     $mail->setLanguage('fr', '/optional/path/to/language/directory/');

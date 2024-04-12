@@ -522,7 +522,7 @@
         //console.log($ProduitRef);
     $( function() {
         var availableTags = <?php echo json_encode($_SESSION['ProduitDesign']); ?>;
-        console.log(availableTags);
+        //console.log(availableTags);
         $( ".designa" ).autocomplete({
         minLength:3,
         source: availableTags,
@@ -1005,6 +1005,7 @@
                                                                                                         $('.suprimerCommande').click(function(e) {
                                                                                                             var idda = $(this).closest("tr").find(".idda").val();
                                                                                                             var id = $(this).closest("tr").find(".id").val();
+                                                                                                            console.log('deleteAdmin.php?id='+id+'&idda='+idda)
                                                                                                             e.preventDefault();
                                                                                                             Swal.fire({
                                                                                                             title: 'En es-tu sure?',
@@ -1268,7 +1269,7 @@
                                                                                     if($_SESSION['niveau']=='kemc' && $result2['actifda'] == 0){
                                                                                     ?>
                                                                                         <a data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-success  w-lg bouton"><i class="bx bx-plus me-1"></i> Ajouter piéces</a>
-                                                                                        <?php
+                                                                                    <?php
                                                                                     } 
                                                                                     ?>
                                                                                     <?php
